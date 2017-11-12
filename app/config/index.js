@@ -4,7 +4,7 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path')
-let cc = {}
+var cc = {}
 try {
   cc = require('../.config')
 } catch (e) {
