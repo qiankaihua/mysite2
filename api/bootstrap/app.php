@@ -48,6 +48,12 @@ $app->singleton(
     App\Console\Kernel::class
 );
 
+$app->singleton(
+    Illuminate\Contracts\Filesystem\Factory::class,
+    function ($app) {
+        return new Illuminate\Filesystem\FilesystemManager($app);
+    }
+);
 /*
 |--------------------------------------------------------------------------
 | Register Middleware
@@ -83,7 +89,18 @@ $app->routeMiddleware([
 $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
-
+$app->register(Mews\Purifier\PurifierServiceProvider::class);  //注册Excel服务提供者
+/*
+|--------------------------------------------------------------------------
+| Class Aliases
+|--------------------------------------------------------------------------
+|
+| This array of class aliases will be registered when this application
+| is started. However, feel free to register as many as you wish as
+| the aliases are "lazy" loaded so they don't hinder performance.
+|
+*/
+class_alias('Mews\Purifier\Facades\Purifier', 'Excel');  //添加Excel类别名
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

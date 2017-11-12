@@ -29,7 +29,7 @@ class CreateUserTable extends Migration
         });
         DB::table('user')->insert([
             'username' => 'administrator',
-            'password' => app('hash')->make(sha1('admin')),
+            'password' => app('hash')->make(sha1('administrator')),
             'nickname' => 'administrator',
             'gender' => 0,
             'email' => 'admin@qiankaihua.top',

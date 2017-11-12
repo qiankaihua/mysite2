@@ -10,6 +10,11 @@ class User extends Model
     use SoftDeletes;
 
     protected $table = 'user';
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'birthday',
+    ];
 
     public function setPasswordAttribute($pwd) {
         $this->attributes['password'] = app('hash')->make($pwd);

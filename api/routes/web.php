@@ -12,7 +12,6 @@
 */
 
 $router->get('/', function () use ($router) {
-    return strtotime('1997-11-07');
     return $router->app->version();
 });
 
@@ -45,7 +44,7 @@ $router->group([
     $router->get('comment/{blog_id}', 'CommentController@Show');
     $router->get('comment/reply/{comment_id}', 'CommentController@ShowRelpy');
 
-//    $router->get('img/{img_name}', 'ImageController@Show');
+    $router->get('img/{folder_name}/{img_name}', 'ImageController@Show');
 });
 
 $router->group([

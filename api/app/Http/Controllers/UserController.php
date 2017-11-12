@@ -17,6 +17,7 @@ class UserController extends Controller
     }
 
     public function Register(Request $request) {
+//        return $request->input('birthday', null);
         $this->validate($request, [
             'username' => [
                 'required',
@@ -32,7 +33,8 @@ class UserController extends Controller
             'nickname' => [
                 'nullable',
                 'string',
-                'regex:/^[\x{4e00}-\x{9fa5}]{1,9}$|^[\dA-Za-z_]{1,18}$/u',
+                'max:30',
+//                'regex:/^[\x{4e00}-\x{9fa5}]{1,9}$|^[\dA-Za-z_]{1,18}$/u',
             ],
             'gender' => 'nullable|integer|in:1,0',
             'email' => 'required|email|unique:user,email',
@@ -42,11 +44,12 @@ class UserController extends Controller
                 'string',
                 'regex:/^1(3|4|5|7|8)[0-9]{9}$/',
             ],
-            'birthday' => 'nullable|date',
+            'birthday' => 'nullable|string',
             'realname' => [
                 'nullable',
                 'string',
-                'regex:/^[\x{4e00}-\x{9fa5}]{1,7}$|^[\dA-Za-z_]{1,14}$/u',
+                'max:30',
+//                'regex:/^[\x{4e00}-\x{9fa5}]{1,7}$|^[\dA-Za-z_]{1,30}$/u',
             ],
         ]);
         $user = new \App\Models\User;
@@ -57,7 +60,8 @@ class UserController extends Controller
         $user->email = $request->input('email');
         $avatar_name = null;
         if(isset($request['avatar'])) {
-            $avatar_name = $request->file('avatar')->store('public/avatar');
+            $extension = $request->file('avatar')->extension();
+            $avatar_name = $request->file('avatar')->move('public/avatar', Uuid::uuid4()->toString().'.'.$extension);
         }
         $user->avatar = ($avatar_name === null) ? null : $avatar_name;
         $user->phone = $request->input('phone', null);
@@ -74,7 +78,7 @@ class UserController extends Controller
             'username' => [
                 'nullable',
                 'string',
-                'regex:/^[a-zA-Z][a-zA-Z0-9_]{4,19}$/',
+                'regex:/^[a-zA-Z][a-zA-Z0-9_]{5,19}$/',
             ],
             'password' => [
                 'required',
@@ -197,11 +201,11 @@ class UserController extends Controller
         ]);
         $user = \App\Models\User::withTrashed()->where('id', '=', $user_id)->first();
         if($user === null) abort(404);
-        if($request->input('nickname', null) !== null) $user->nickname = $request->input('nickname');
+        if($request->input('nickname', null) !== null) $user->nickname = clean($request->input('nickname'));
         if($request->input('gender', null) !== null) $user->gender = $request->input('gender');
         if($request->input('phone', null) !== null) $user->phone = $request->input('phone');
         if($request->input('birthday', null) !== null) $user->birthday = $request->input('birthday');
-        if($request->input('realname', null) !== null) $user->realname = $request->input('realname');
+        if($request->input('realname', null) !== null) $user->realname = clean($request->input('realname'));
         $avatar_name = null;
         if(isset($request['avatar'])) {
             if($user->avatar !== null) {
@@ -243,7 +247,7 @@ class UserController extends Controller
         if($now_user->id !== 1 && $now_user->id !== $user_id) abort(403);
         $user = \App\Models\User::withTrashed('id', '=', $user_id)->first();
         if(! app('hash')->check($request->input('password_old'), $user->password)) abort(401);
-        $user->password = $request->input('password_new');
+        $user->password = clean($request->input('password_new'));
         $user->save();
         return response([
             'success',
