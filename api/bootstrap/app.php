@@ -100,7 +100,7 @@ $app->register(Mews\Purifier\PurifierServiceProvider::class);  //注册Excel服�
 | the aliases are "lazy" loaded so they don't hinder performance.
 |
 */
-class_alias('Mews\Purifier\Facades\Purifier', 'Excel');  //添加Excel类别名
+class_alias('Mews\Purifier\Facades\Purifier', 'Purifier'); //
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

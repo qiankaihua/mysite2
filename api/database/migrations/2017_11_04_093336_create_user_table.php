@@ -37,8 +37,8 @@ class CreateUserTable extends Migration
             'phone' => null,
             'birthday' => '1997-11-07 20:00:00',
             'realname' => 'qiankaihua',
-            'created_at' => '1997-11-07 20:00:00',
-            'updated_at' => '1997-11-07 20:00:00',
+            'created_at' => '1996-11-07 20:00:00',
+            'updated_at' => '1996-11-07 20:00:00',
         ]);
     }
 

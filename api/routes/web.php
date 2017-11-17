@@ -11,9 +11,24 @@
 |
 */
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
+$router->get('/check', ['middleware' => 'Check', function () use ($router) {
+    return 'true';
+}]);
+$router->get('/addtime', ['middleware' => 'AddTime', function (\Illuminate\Support\Facades\Request $request) use ($router) {
+    $now_user = $request->input('now_user', null);
+    if($now_user === null) return [];
+    $avatar = null;
+    if(isset($user->avatar)) {
+        $avatar = str_replace("public/", "", $now_user->avatar);
+        $avatar = str_replace(".", '_', $avatar);
+    }
+    return response([
+        'nickname' => $now_user->nickname,
+        'gender' => $now_user->gender,
+        'avatar' => $avatar,
+    ]);
+}]);
+
 
 $router->group([
     'prefix' => 'auth',
