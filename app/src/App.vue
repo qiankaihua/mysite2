@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <router-view></router-view>
-    <i-footer :key="key"></i-footer>
+    <router-view :key="key"></router-view>
+    <i-footer></i-footer>
   </div>
 </template>
 

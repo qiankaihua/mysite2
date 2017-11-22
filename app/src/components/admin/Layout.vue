@@ -5,7 +5,7 @@
         <i-col span="5" class="layout-menu-left">
           <i-menu theme="dark" width="auto" :open-names="[]"
                   :active-name="$route.name"
-                  @on-select="$router.push({ name: $event })"
+                  @on-select="$router.push({ name: $event, params: {id: $store.state.auth.authUser.id} })"
                   :default-active="$route.name" :accordion=true>
             <div class="layout-logo-left">To Be Continue</div>
             <i-menu-item name="Home" :key="1107">
@@ -66,9 +66,9 @@
             icon: 'document-text',
             title: '博客相关',
             items: [
-              {to: {name: 'AdminHome'}, title: '发表新博文', show: true},
-              {to: {name: 'AdminHome'}, title: '博文列表', show: true},
-              {to: {name: 'AdminHome'}, title: '博文分类', show: true}
+              {to: {name: ''}, title: '发表新博文', show: true},
+              {to: {name: ''}, title: '博文列表', show: true},
+              {to: {name: ''}, title: '博文分类', show: true}
             ]
           },
           {
@@ -76,9 +76,9 @@
             icon: 'images',
             title: '照片相关',
             items: [
-              {to: {name: 'AdminHome'}, title: '查看相册', show: true},
-              {to: {name: 'AdminHome'}, title: '新建相册', show: true},
-              {to: {name: 'AdminHome'}, title: '上传图像', show: true}
+              {to: {name: ''}, title: '查看相册', show: true},
+              {to: {name: ''}, title: '新建相册', show: true},
+              {to: {name: ''}, title: '上传图像', show: true}
             ]
           }
         ]

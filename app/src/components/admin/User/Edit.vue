@@ -152,7 +152,7 @@
     computed: {
     },
     beforeMount: function () {
-      this.$http.get('show/user/' + this.$store.state.auth.authUser.id, {params: {token: this.$store.state.auth.token}})
+      this.$http.get('show/user/' + this.$route.params.id, {params: {token: this.$store.state.auth.token}})
         .then(response => {
           this.username = response.data.username
           this.email = response.data.email
@@ -160,32 +160,31 @@
           this.formValidate.realname = response.data.realname
           this.formValidate.phone = response.data.phone
           this.formValidate.gender = response.data.gender
-          this.formValidate.date = moment.unix(response.data.birthday).format('YYYY-MM-DD')
+          this.formValidate.date = response.data.birthday === null ? null : moment.unix(response.data.birthday).format('YYYY-MM-DD')
+          this.avatar_name = response.data.avatar
+          this.nickname = response.data.nickname
+          if (this.avatar_name !== null && this.avatar_name !== undefined) {
+            this.$http.get('show/img/' + this.avatar_name)
+              .then((response) => {
+                this.oldAvatar = response.data
+                this.hasOldAvatar = true
+              })
+              .catch((e) => {
+                sessionStorage.oldAvatar = null
+                this.oldAvatar = null
+                this.hasOldAvatar = false
+                console.log(e)
+              })
+          } else {
+            this.oldAvatar = null
+            this.hasOldAvatar = false
+          }
         })
         .catch(e => {
           console.log(e)
         })
       this.status = this.$store.state.auth.status
       this.token = this.$store.state.auth.token
-      let auth = this.$store.state.auth.authUser
-      this.nickname = auth.nickname
-      this.avatar_name = auth.avatar
-      if (this.avatar_name !== null) {
-        this.$http.get('show/img/' + this.avatar_name)
-          .then((response) => {
-            this.oldAvatar = response.data
-            this.hasOldAvatar = true
-          })
-          .catch((e) => {
-            sessionStorage.oldAvatar = null
-            this.oldAvatar = null
-            this.hasOldAvatar = false
-            console.log(e)
-          })
-      } else {
-        this.oldAvatar = null
-        this.hasOldAvatar = false
-      }
     },
     methods: {
       Change: (that) => {
@@ -211,12 +210,12 @@
               }
             }
             console.log(that.formValidate.phone)
-            that.$http.post('user/' + that.$store.state.auth.authUser.id + '/edit', formData, config)
+            that.$http.post('user/' + that.$route.params.id + '/edit', formData, config)
               .then((response) => {
                 console.log(response.data)
                 that.$Loading.finish()
                 that.$Notice.success({ title: '修改成功' })
-                that.$http.get('show/user/' + that.$store.state.auth.authUser.id, {params: {token: that.$store.state.auth.token}})
+                that.$http.get('show/user/' + that.$route.params.id, {params: {token: that.$store.state.auth.token}})
                   .then(response => {
                     let auth = {
                       id: response.data.id,
@@ -224,14 +223,16 @@
                       gender: response.data.gender,
                       avatar: response.data.avatar
                     }
-                    store.set('authUser', auth)
-                    that.$store.commit('SET_AUTH_USER', auth)
+                    if (that.$store.state.auth.authUser.id === auth.id) {
+                      store.set('authUser', auth)
+                      that.$store.commit('SET_AUTH_USER', auth)
+                    }
                   })
                   .catch(e => {
                     console.log(e)
                   })
                 that.$Loading.finish()
-                that.$router.push({ name: 'AdminEdit' })
+                that.$router.push({ name: 'AdminEdit', params: { id: that.$route.params.id } })
               })
               .catch((e) => {
                 that.$Loading.error()
@@ -245,8 +246,13 @@
                     that.$router.push({ path: '/login' })
                     that.$Loading.error()
                     break
+                  case 403:
+                    that.$Notice.error({title: '无操作权限'})
+                    that.$Loading.error()
+                    break
                   default :
                     that.$Notice.error({title: '未知错误'})
+                    that.$Loading.error()
                 }
               })
           }

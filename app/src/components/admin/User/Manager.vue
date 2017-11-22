@@ -49,50 +49,43 @@
   import moment from 'moment'
   export default {
     name: 'ManagerUser',
-    data: (that = this) => ({
-      Users: [],
-      loading: false,
-      Pagination: {
-        Total: 0,
-        Current: 1,
-        Size: 20
-      },
-      columns: [
-        {
-          title: '#',
-          key: 'id',
-          width: 80
-        },
-        {
-          title: '昵称',
-          key: 'nickname'
-        },
-        {
-          title: '性别',
-          key: 'gender',
-          width: 70
-        },
-        {
-          title: '发布博客',
-          key: 'blog',
-          width: 90
-        },
-        {
-          title: '上传图片',
-          key: 'photos',
-          width: 90
-        },
-        {
-          title: '创建时间',
-          key: 'created_at',
-          align: 'center'
-        },
-        {
-          title: '操作',
-          align: 'center',
-          render: (h, params) => {
-            let x = 1
-            if (x === 1) {
+    data () {
+      return {
+        columns: [
+          {
+            title: '#',
+            key: 'id',
+            width: 80
+          },
+          {
+            title: '昵称',
+            key: 'nickname'
+          },
+          {
+            title: '性别',
+            key: 'gender',
+            width: 70
+          },
+          {
+            title: '发布博客',
+            key: 'blog',
+            width: 90
+          },
+          {
+            title: '上传图片',
+            key: 'photos',
+            width: 90
+          },
+          {
+            title: '创建时间',
+            key: 'created_at',
+            align: 'center'
+          },
+          {
+            title: '操作',
+            align: 'center',
+            width: 200,
+            render: (h, params) => {
               return h('div', [
                 h('i-button', {
                   props: {
@@ -104,7 +97,7 @@
                   },
                   on: {
                     click: () => {
-                      that.Show()
+                      this.userShow(params.index)
                     }
                   }
                 }, '查看'),
@@ -118,75 +111,38 @@
                   },
                   on: {
                     click: () => {
-                      that.Edit(params.index)
+                      this.userEdit(params.index)
                     }
                   }
                 }, '编辑'),
                 h('i-button', {
                   props: {
-                    type: 'error',
+                    type: this.getType(params.index),
                     size: 'small'
                   },
                   on: {
                     click: () => {
-                      that.Delete(params.index)
+                      this.userChange(params.index)
                     }
                   }
-                }, '删除')
-              ])
-            } else {
-              return h('div', [
-                h('i-button', {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    click: () => {
-                      that.Show()
-                    }
-                  }
-                }, '查看'),
-                h('i-button', {
-                  props: {
-                    type: 'success',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    click: () => {
-                      that.Edit(params.index)
-                    }
-                  }
-                }, '编辑'),
-                h('i-button', {
-                  props: {
-                    type: 'error',
-                    size: 'small'
-                  },
-                  on: {
-                    click: () => {
-                      that.Restore(params.index)
-                    }
-                  }
-                }, '恢复')
+                }, this.title(params.index))
               ])
             }
           }
+        ],
+        Users: [],
+        loading: false,
+        Pagination: {
+          Total: 0,
+          Current: 1,
+          Size: 20
         }
-      ]
-    }),
+      }
+    },
     created () {
       let page = (this.$route.query.page || '').split(',')
       this.Pagination.Current = +page[0] || 1
       this.Pagination.Size = +page[1] || 10
-      console.log('created')
-      console.log(page)
       this.GetUser()
     },
     computed: {},
@@ -194,45 +150,99 @@
       Pagination: {
         handler (cur, old) {
           let page = this.Pagination.Current + ',' + this.Pagination.Size
-          console.log(page)
           this.$router.push({ query: { page } })
-          this.GetUser()
         },
         deep: true
       }
     },
     methods: {
       GetUser () {
-        console.log(this.Pagination)
         this.loading = true
         let params = {
           offset: this.Pagination.Size * (this.Pagination.Current - 1),
           limit: this.Pagination.Size,
-          token: this.$store.state.auth.token
+          token: this.$store.state.auth.token,
+          want_deleted: true
         }
         this.$http.get('show/user/list', { params })
           .then(res => {
-            console.log(res)
             this.Pagination.Total = +res.headers['x-total']
             this.Users = res.data
             for (let user of this.Users) {
               user.created_at = moment.unix(user.created_at).format('YYYY-MM-DD HH:mm:ss')
               user.gender = user.gender === 0 ? '男' : '女'
             }
-            console.log(this.Users)
             this.loading = false
           })
           .catch(e => {
             this.loading = false
           })
       },
-      Show () {
+      userShow (index) {
+        this.$router.push({name: 'AdminShowUser', params: {id: this.Users[index].id}})
       },
-      Edit () {
+      userEdit (index) {
+        this.$router.push({name: 'AdminEdit', params: {id: this.Users[index].id}})
       },
-      Delete () {
+      userChange (index) {
+        let data = {
+          'token': this.$store.state.auth.token
+        }
+        if (this.Users[index].deleted_at === null) {
+          this.$http.delete('user/' + this.Users[index].id, {params: {token: this.$store.state.auth.token}})
+            .then(r => {
+              this.$Notice.success({title: '删除成功'})
+              this.GetUser()
+            })
+            .catch(e => {
+              console.log(e)
+              switch (e.response.status) {
+                case 401:
+                  this.$Notice.error({title: '登录状态失效，请重新登录'})
+                  this.$router.push({ path: '/login' })
+                  this.$Loading.error()
+                  break
+                case 403:
+                  this.$Notice.error({title: '无操作权限'})
+                  this.$Loading.error()
+                  break
+                default :
+                  this.$Notice.error({title: '未知错误'})
+                  this.$Loading.error()
+              }
+            })
+        } else {
+          this.$http.put('user/' + this.Users[index].id, data)
+            .then(r => {
+              this.$Notice.success({title: '恢复成功'})
+              this.GetUser()
+            })
+            .catch(e => {
+              console.log(e)
+              switch (e.response.status) {
+                case 401:
+                  this.$Notice.error({title: '登录状态失效，请重新登录'})
+                  this.$router.push({ path: '/login' })
+                  this.$Loading.error()
+                  break
+                case 403:
+                  this.$Notice.error({title: '无操作权限'})
+                  this.$Loading.error()
+                  break
+                default :
+                  this.$Notice.error({title: '未知错误'})
+                  this.$Loading.error()
+              }
+            })
+        }
       },
-      Restore () {
+      title (index) {
+        if (this.Users[index].deleted_at === null) return '删除'
+        else return '恢复'
+      },
+      getType (index) {
+        if (this.Users[index].deleted_at === null) return 'error'
+        else return 'warning'
       }
     }
   }

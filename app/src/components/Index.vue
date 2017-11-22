@@ -41,7 +41,7 @@
       ToHome () {
         this.$Loading.start()
         this.$Loading.finish()
-        this.$router.push({ path: '/home' })
+        this.$router.push({ name: 'Home' })
       }
     }
   }

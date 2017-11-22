@@ -154,7 +154,7 @@
                 this.$store.commit('SET_STATUS', true)
                 this.$Loading.finish()
                 this.$Notice.success({ title: '登录成功' })
-                this.$router.push({ path: '/home' })
+                this.$router.push({ name: 'Home' })
               })
               .catch(e => {
                 iView.LoadingBar.error()
@@ -176,7 +176,7 @@
       ToHome () {
         this.$Loading.start()
         this.$Loading.finish()
-        this.$router.push({ path: '/home' })
+        this.$router.push({ name: 'Home' })
       },
       ToRegister () {
         this.$Loading.start()

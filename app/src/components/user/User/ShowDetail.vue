@@ -1,12 +1,12 @@
 <template>
-  <div class="ShowIndex">
-    fdafdafdasf
+  <div class="ShowDetail">
+    暂时仅Manager有内容
   </div>
 </template>
 
 <script>
   export default {
-    name: '',
+    name: 'UserDetail',
     data: () => ({}),
     computed: {},
     methods: {}

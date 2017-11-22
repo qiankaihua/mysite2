@@ -1,12 +1,9 @@
 <template>
-  <div class="ShowIndex">
-    fdafdafdasf
-  </div>
 </template>
 
 <script>
   export default {
-    name: '',
+    name: 'OtherUserDetail',
     data: () => ({}),
     computed: {},
     methods: {}

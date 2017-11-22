@@ -117,8 +117,10 @@ class UserController extends Controller
         $this->validate($request, [
             'offset' => 'nullable|integer|min:0',
             'limit' => 'nullable|integer|min:1',
+            'want_daletad' => 'nullable|string|in:true,false',
         ]);
         $users_build = \App\Models\User::where('id', '>', 0);
+        if ($request->input('want_daleted', 'false') == true) $users_build->withTrashed();
         $Total = count($users_build->get());
         $users_build = $users_build->take($request->input('limit', $Total));
         $users_build = $users_build->offset($request->input('offset', 0));

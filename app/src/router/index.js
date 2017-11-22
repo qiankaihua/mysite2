@@ -13,8 +13,20 @@ export default new VueRouter({
     },
     {
       path: '/home',
-      name: 'Home',
-      component: r => require(['../components/user/Home.vue'], r)
+      name: 'HomeLayout',
+      component: r => require(['../components/user/Layout.vue'], r),
+      children: [
+        {
+          path: 'index',
+          name: 'Home',
+          component: r => require(['../components/user/Home.vue'], r)
+        },
+        {
+          path: 'user/:id',
+          name: 'UserDetail',
+          component: r => require(['../components/user/User/ShowDetail.vue'], r)
+        }
+      ]
     },
     {
       path: '/admin',
@@ -27,7 +39,7 @@ export default new VueRouter({
           component: r => require(['../components/admin/Home.vue'], r)
         },
         {
-          path: 'edit',
+          path: 'edit/:id',
           name: 'AdminEdit',
           component: r => require(['../components/admin/User/Edit.vue'], r)
         },
@@ -40,6 +52,11 @@ export default new VueRouter({
           path: 'manager',
           name: 'ManagerUser',
           component: r => require(['../components/admin/User/Manager.vue'], r)
+        },
+        {
+          path: 'manager/user/:id',
+          name: 'AdminShowUser',
+          component: r => require(['../components/admin/User/OtherUserDetail.vue'], r)
         }
       ]
     },
