@@ -1,6 +1,6 @@
 <template>
   <div class="ShowIndex">
-    fdafdafdasf
+    暂时仅Manager有内容
   </div>
 </template>
 
