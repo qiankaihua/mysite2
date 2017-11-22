@@ -2,7 +2,7 @@
   <div class="Footer">
     <Row>
       <i-col offset="5">
-        <div>2017 @ Qian Kaihua</div>
+        <div>2017 &copy; Qian Kaihua</div>
       </i-col>
     </Row>
   </div>
@@ -10,6 +10,7 @@
 
 <style scoped>
   .Footer {
+    text-align: center;
     background-color: #C0C0C0;
     height: 100px;
     width: 100%;

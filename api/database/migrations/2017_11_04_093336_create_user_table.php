@@ -35,7 +35,7 @@ class CreateUserTable extends Migration
             'email' => 'admin@qiankaihua.top',
             'avatar' => null,
             'phone' => null,
-            'birthday' => '1997-11-07 20:00:00',
+            'birthday' => '1996-11-07 20:00:00',
             'realname' => 'qiankaihua',
             'created_at' => '1996-11-07 20:00:00',
             'updated_at' => '1996-11-07 20:00:00',

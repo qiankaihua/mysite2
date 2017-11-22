@@ -14,9 +14,11 @@
 $router->get('/check', ['middleware' => 'Check', function () use ($router) {
     return 'true';
 }]);
-$router->get('/addtime', ['middleware' => 'AddTime', function (\Illuminate\Support\Facades\Request $request) use ($router) {
+$router->get('/addtime', ['middleware' => 'AddTime', function (\Illuminate\Http\Request $request) use ($router) {
+//    if (!isset($request->now_user)) return 'false';
+//    $now_user = $request->now_user;
     $now_user = $request->input('now_user', null);
-    if($now_user === null) return [];
+    if($now_user === null) return 'false';
     $avatar = null;
     if(isset($user->avatar)) {
         $avatar = str_replace("public/", "", $now_user->avatar);
@@ -69,7 +71,7 @@ $router->group([
     $router->delete('{user_id}', 'UserController@Delete');
     $router->put('{user_id}', 'UserController@Restore');
     $router->put('{user_id}/security', 'UserController@ChangePassword');
-    $router->put('{user_id}/info', 'UserController@Change');
+    $router->post('{user_id}/edit', 'UserController@Change');
 });
 
 $router->group([

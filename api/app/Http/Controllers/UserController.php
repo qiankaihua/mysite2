@@ -106,6 +106,7 @@ class UserController extends Controller
         $user->apitokens()->save($apitoken);
         return response([
             'token' => $apitoken->token,
+            'id' => $user->id,
             'gender' => $user->gender,
             'nickname' => $user->nickname,
             'avatar' => $avatar,
@@ -114,12 +115,13 @@ class UserController extends Controller
 
     public function Show(Request $request) {
         $this->validate($request, [
-            'offset' => 'nullable|integer|min:1',
+            'offset' => 'nullable|integer|min:0',
             'limit' => 'nullable|integer|min:1',
         ]);
         $users_build = \App\Models\User::where('id', '>', 0);
-        if($request->input('offset', null) !== null) $users_build = $users_build->offset($request->input('offset'));
-        if($request->input('limit', null) !== null) $users_build = $users_build->take($request->input('limit'));
+        $Total = count($users_build->get());
+        $users_build = $users_build->take($request->input('limit', $Total));
+        $users_build = $users_build->offset($request->input('offset', 0));
         $users = $users_build->get();
         $response = [];
         foreach ($users as $key => $user) {
@@ -128,13 +130,20 @@ class UserController extends Controller
                 $avatar = str_replace("public/", "", $user->avatar);
                 $avatar = str_replace(".", '_', $avatar);
             }
+            $blog_number = count($user->blogs()->get());
+            $photo_number = count($user->photos()->get());
             $response[$key] = [
+                'id' => $user->id,
                 'nickname' => $user->nickname,
                 'gender' => $user->gender,
                 'avatar' => $avatar,
+                'blog' => $blog_number,
+                'photos' => $photo_number,
+                'created_at' => $user->created_at->timestamp,
+                'deleted_at' => $user->deleted_at === null ? null : strtotime($user->deleted_at),
             ];
         }
-        return response($response);
+        return response($response)->header('X-Total', $Total);
     }
     public function ShowDetail(Request $request, $user_id) {
         $now_user = $request->input('now_user', null);
@@ -144,15 +153,16 @@ class UserController extends Controller
             $avatar = str_replace("public/", "", $user->avatar);
             $avatar = str_replace(".", '_', $avatar);
         }
-        if($now_user !== null && $now_user->id === 1) {
+        if($now_user !== null && ($now_user->id === 1 || $now_user->id == $user_id)) {
             return response([
+                'id' => $user->id,
                 'username' => $user->username,
                 'nickname' => $user->nickname,
                 'gender' => $user->gender,
                 'email' => $user->email,
                 'avatar' => $avatar,
                 'phone' => $user->phone,
-                'birthday' => $user->birthday,
+                'birthday' => $user->birthday === null ? null : strtotime($user->birthday),
                 'realname' => $user->realname,
                 'deleted_at' => $user->deleted_at === null ? null : strtotime($user->deleted_at),
                 'created_at' => $user->created_at->timestamp,
@@ -178,7 +188,7 @@ class UserController extends Controller
     }
     public function Change(Request $request, $user_id) {
         $now_user = $request->input('now_user', null);
-        if($now_user->id !== 1 && $now_user->id !== $user_id) abort(403);
+        if($now_user->id !== 1 && $now_user->id != $user_id) abort(403);
         $this->validate($request, [
             'nickname' => [
                 'nullable',
@@ -192,7 +202,7 @@ class UserController extends Controller
                 'string',
                 'regex:/^1(3|4|5|7|8)[0-9]{9}$/',
             ],
-            'birthday' => 'nullable|date',
+            'birthday' => 'nullable|integer',
             'realname' => [
                 'nullable',
                 'string',
@@ -201,17 +211,18 @@ class UserController extends Controller
         ]);
         $user = \App\Models\User::withTrashed()->where('id', '=', $user_id)->first();
         if($user === null) abort(404);
-        if($request->input('nickname', null) !== null) $user->nickname = clean($request->input('nickname'));
+        if($request->input('nickname', null) !== null) $user->nickname = $request->input('nickname');
         if($request->input('gender', null) !== null) $user->gender = $request->input('gender');
         if($request->input('phone', null) !== null) $user->phone = $request->input('phone');
         if($request->input('birthday', null) !== null) $user->birthday = $request->input('birthday');
-        if($request->input('realname', null) !== null) $user->realname = clean($request->input('realname'));
+        if($request->input('realname', null) !== null) $user->realname = $request->input('realname');
         $avatar_name = null;
         if(isset($request['avatar'])) {
             if($user->avatar !== null) {
                 Storage::delete($user->avatar);
             }
-            $avatar_name = $request->file('avatar')->store('public/avatar');
+            $extension = $request->file('avatar')->extension();
+            $avatar_name = $request->file('avatar')->move('public/avatar', Uuid::uuid4()->toString().'.'.$extension);
         }
         if($avatar_name !== null) $user->avatar = $avatar_name;
         $user->save();
@@ -244,10 +255,11 @@ class UserController extends Controller
         ]);
         $now_user = $request->input('now_user', null);
         if($now_user === null) abort(401);
-        if($now_user->id !== 1 && $now_user->id !== $user_id) abort(403);
+        if($now_user->id !== 1 && $now_user->id != $user_id) abort(403);
         $user = \App\Models\User::withTrashed('id', '=', $user_id)->first();
-        if(! app('hash')->check($request->input('password_old'), $user->password)) abort(401);
-        $user->password = clean($request->input('password_new'));
+//        if(!app('hash')->check($request->input('password', ''), $user->password)) abort(401);
+        if(! app('hash')->check($request->input('password_old', ''), $user->password)) abort(422);
+        $user->password = $request->input('password_new');
         $user->save();
         return response([
             'success',
