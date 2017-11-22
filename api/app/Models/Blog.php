@@ -9,7 +9,7 @@ class Blog extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'Blog';
+    protected $table = 'blog';
 
     public function user() {
         return $this->belongsTo('App\Models\User', 'user_id', 'id');
