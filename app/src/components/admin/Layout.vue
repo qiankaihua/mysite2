@@ -66,7 +66,7 @@
             icon: 'document-text',
             title: '博客相关',
             items: [
-              {to: {name: ''}, title: '发表新博文', show: true},
+              {to: {name: 'AddBlog'}, title: '发表新博文', show: true},
               {to: {name: ''}, title: '博文列表', show: true},
               {to: {name: ''}, title: '博文分类', show: true}
             ]

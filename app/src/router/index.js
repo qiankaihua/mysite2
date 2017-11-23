@@ -57,6 +57,11 @@ export default new VueRouter({
           path: 'manager/user/:id',
           name: 'AdminShowUser',
           component: r => require(['../components/admin/User/OtherUserDetail.vue'], r)
+        },
+        {
+          path: 'blog/post',
+          name: 'AddBlog',
+          component: r => require(['../components/admin/Blog/Add.vue'], r)
         }
       ]
     },
