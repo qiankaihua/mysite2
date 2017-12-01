@@ -38,7 +38,9 @@ class TagController extends Controller
         $blog = \App\Models\Blog::withTrashed()->where('id', '=', $request->input('blog_id'))->first();
         if($blog === null) abort(404);
         if($blog->user_id !== $user->id && $user->id !== 1) abort(403);
-        $tag = \App\Models\Tag;
+        $has_tag =\App\Models\Tag::where('blog_id', '=', $request->input('blog_id'))->where('value', '=', $request->input('value'))->get();
+        if (count($has_tag) !== 0) return response(['success']);
+        $tag = new \App\Models\Tag;
         $tag->value = $request->input('value');
         $blog->tags()->save($tag);
         return response([

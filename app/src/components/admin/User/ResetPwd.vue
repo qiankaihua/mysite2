@@ -70,7 +70,7 @@
           <i-row class="buttom">
             <i-col span="12" offset="5">
               <i-form-item label="确认密码" prop="rePassword">
-                <i-input v-model="formValidate.rePassword" placeholder="请再次输入密码" type="password">
+                <i-input v-model="formValidate.rePassword" placeholder="Enter your new password again" type="password">
               <span slot="prepend">
                 <i-icon :size="22" type="key"></i-icon>
               </span>
@@ -167,8 +167,6 @@
             let hash2 = createHash2('sha1')
             hash2.update(this.formValidate.password_new)
             this.formValidate.password_new = hash2.digest('HEX')
-            console.log(this.formValidate.password_old)
-            console.log(this.formValidate.password_new)
             this.$http.put('user/' + this.user_id + '/security', {'token': this.token, 'password_old': this.formValidate.password_old, 'password_new': this.formValidate.password_new})
               .then(response => {
                 localStorage.clear()

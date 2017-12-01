@@ -5,7 +5,7 @@
         <i-col :xs="SpanLeftXS" :sm="SpanLeftSM" :md="SpanLeftMD" :lg="SpanLeftLG" class="layout-menu-left">
           <i-menu active-name="2" theme="dark" width="auto" :open-names="['1']" @on-select="$router.push({ name: $event })">
             <div class="layout-header">
-              <i-avatar v-if="avatar" :src="'data:image/*;base64, ' + avatar" size="default" />
+              <i-avatar v-if="avatar" :src="avatar" size="default" />
               <i-avatar v-else icon="person" size="default" />
               <i-button type="text" @click="toggleClick()" class="right-switch-button">
                 <i-icon type="navicon" color="white" size="32"></i-icon>
@@ -47,7 +47,6 @@
       </i-row>
       <i-row class="child-container">
         <i-col :xs="{span: 19, offset: 5 }" :sm="{span: 24-SpanLeftSM, offset: SpanLeftSM}" :md="{span: 24-SpanLeftMD, offset: SpanLeftMD}" :lg="{span: 24-SpanLeftLG, offset: SpanLeftLG}">
-          <!--<span>abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz</span>-->
           <router-view></router-view>
         </i-col>
       </i-row>
@@ -57,6 +56,7 @@
 </template>
 
 <script>
+  import axios from 'axios'
   import store from 'store'
   export default {
     name: 'userHome',
@@ -89,16 +89,8 @@
             let auth = this.$store.state.auth.authUser
             this.nickname = auth.nickname
             this.avatar_name = auth.avatar
-            if (this.avatar_name != null) {
-              this.$http.get('show/img/' + this.avatar_name)
-                .then((response) => {
-                  this.avatar = response.data
-                })
-                .catch(function (e) {
-                  sessionStorage.avatar = null
-                  this.avatar = null
-                  console.log(e)
-                })
+            if (this.avatar_name !== null && this.avatar_name !== undefined) {
+              this.avatar = axios.defaults.baseURL + 'show/img/' + this.avatar_name
             } else {
               this.avatar = null
             }

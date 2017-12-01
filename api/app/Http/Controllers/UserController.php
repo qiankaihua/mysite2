@@ -120,7 +120,13 @@ class UserController extends Controller
             'want_daletad' => 'nullable|string|in:true,false',
         ]);
         $users_build = \App\Models\User::where('id', '>', 0);
-        if ($request->input('want_daleted', 'false') == true) $users_build->withTrashed();
+        if ($request->input('want_daleted', 'false') == true) {
+            $now_user = $request->input('now_user', null);
+            if($now_user === null) abort(401);
+            $user_id = $request->input('user_id', 1);
+            if($now_user->id !== $user_id && $now_user->id !== 1) abort(403);
+            $users_build->withTrashed();
+        }
         $Total = count($users_build->get());
         $users_build = $users_build->take($request->input('limit', $Total));
         $users_build = $users_build->offset($request->input('offset', 0));
@@ -182,6 +188,7 @@ class UserController extends Controller
         $now_user = $request->input('now_user', null);
         if($now_user === null) abort(401);
         if($now_user->id !== 1) abort(403);
+        if($user_id == 1) abort(444);
         $user = \App\Models\User::withTrashed()->where('id', '=', $user_id)->first();
         if($user->deleted_at === null) $user->delete();
         return response([

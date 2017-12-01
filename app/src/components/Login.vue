@@ -86,18 +86,18 @@
       },
       ruleValidate: {
         name: [
-          { required: true, message: 'The name cannot be empty', trigger: 'blur' },
-          { pattern: /^[a-zA-Z][a-zA-Z0-9_]{5,19}$/, message: 'Name length must between 6 and 20 with letter, number and underline(_)', trigger: 'blur' },
-          { pattern: /^[a-zA-Z]/, message: 'Name must begin with letter', trigger: 'blur' }
+          { required: true, message: '用户名不能为空', trigger: 'blur' },
+          { pattern: /^[a-zA-Z][a-zA-Z0-9_]{5,19}$/, message: '用户名只能由6-20位的字母,数字,下划线组成', trigger: 'blur' },
+          { pattern: /^[a-zA-Z]/, message: '用户名只能由字母开头', trigger: 'blur' }
         ],
         mail: [
-          { required: true, message: 'Mailbox cannot be empty', trigger: 'blur' },
-          { type: 'email', message: 'Incorrect email format', trigger: 'blur' }
+          { required: true, message: '邮箱不能为空', trigger: 'blur' },
+          { type: 'email', message: '不合法的邮箱格式', trigger: 'blur' }
         ],
         password: [
-          { required: true, message: 'Password cannot be empty', trigger: 'blur' },
-          { pattern: /^[\x21-\x7e]{6,20}$/, message: 'Password length must between 6 and 20', trigger: 'blur' },
-          { pattern: /^[a-zA-Z]/, message: 'Password must begin with letter', trigger: 'blur' }
+          { required: true, message: '密码不能为空', trigger: 'blur' },
+          { pattern: /^[\x21-\x7e]{6,20}$/, message: '密码长度必须在6到20位之间', trigger: 'blur' },
+          { pattern: /^[a-zA-Z]/, message: '密码必须由字母开头', trigger: 'blur' }
         ]
       }
     }),

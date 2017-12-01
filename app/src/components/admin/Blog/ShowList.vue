@@ -1,15 +1,15 @@
 <template>
-  <div class="Manager">
+  <div class="ShowBlogList">
     <div class="layout-breadcrumb">
       <i-breadcrumb>
         <i-breadcrumb-item href="/admin/info">Home</i-breadcrumb-item>
-        <i-breadcrumb-item>Profile</i-breadcrumb-item>
-        <i-breadcrumb-item href="/admin/manager">UserList</i-breadcrumb-item>
+        <i-breadcrumb-item>Blog</i-breadcrumb-item>
+        <i-breadcrumb-item>ShowList</i-breadcrumb-item>
       </i-breadcrumb>
     </div>
     <div class="layout-content">
       <div class="layout-content-main">
-        <div class="title">用户管理</div>
+        <div class="title">博文管理</div>
         <i-row>
           <i-col :span="24" align="right">
             <i-page
@@ -26,7 +26,7 @@
           <i-table
             border
             :columns="columns"
-            :data="Users"
+            :data="Blogs"
             :loading="loading"
           ></i-table>
         </div>
@@ -47,44 +47,71 @@
 
 <script>
   import moment from 'moment'
+  import store from 'store'
   export default {
-    name: 'ManagerUser',
+    name: 'AdminBlogList',
     data () {
       return {
         columns: [
           {
             title: '#',
-            key: 'id',
-            width: 80
+            key: 'show_id',
+            width: 80,
+            fixed: 'left'
           },
           {
-            title: '昵称',
-            key: 'nickname'
+            title: '博客标题',
+            key: 'title',
+            width: 200
           },
           {
-            title: '性别',
-            key: 'gender',
-            width: 70
+            title: '博客分类',
+            key: 'category_title',
+            width: 150
           },
           {
-            title: '发布博客',
-            key: 'blog',
+            title: 'Star',
+            key: 'star',
             width: 90
           },
           {
-            title: '上传图片',
-            key: 'photos',
-            width: 90
+            title: '标签',
+            width: 300,
+            render: (h, params) => {
+              let tags = this.Blogs[params.index].tag
+              let tt = []
+              for (let tag of tags) {
+                tt.push(
+                  h('Tag', {
+                    style: {
+                    },
+                    props: {
+//                      type: 'border',
+                      color: 'blue'
+                    }
+                  }, tag)
+                )
+              }
+              return h('div', tt)
+            }
           },
           {
-            title: '创建时间',
+            title: '发布时间',
             key: 'created_at',
-            align: 'center'
+            align: 'center',
+            width: 200
+          },
+          {
+            title: '更新时间',
+            key: 'updated_at',
+            align: 'center',
+            width: 200
           },
           {
             title: '操作',
             align: 'center',
             width: 200,
+            fixed: 'right',
             render: (h, params) => {
               return h('div', [
                 h('i-button', {
@@ -97,7 +124,7 @@
                   },
                   on: {
                     click: () => {
-                      this.userShow(params.index)
+                      this.blogShow(params.index)
                     }
                   }
                 }, '查看'),
@@ -111,7 +138,7 @@
                   },
                   on: {
                     click: () => {
-                      this.userEdit(params.index)
+                      this.blogEdit(params.index)
                     }
                   }
                 }, '编辑'),
@@ -122,7 +149,7 @@
                   },
                   on: {
                     click: () => {
-                      this.userChange(params.index)
+                      this.blogChange(params.index)
                     }
                   }
                 }, this.title(params.index))
@@ -130,12 +157,12 @@
             }
           }
         ],
-        Users: [],
+        Blogs: [],
         loading: false,
         Pagination: {
           Total: 0,
           Current: 1,
-          Size: 20
+          Size: 10
         }
       }
     },
@@ -143,7 +170,19 @@
       let page = (this.$route.query.page || '').split(',')
       this.Pagination.Current = +page[0] || 1
       this.Pagination.Size = +page[1] || 10
-      this.GetUser()
+      if (this.$store.state.auth.authUser.id === 1) {
+        this.columns.splice(1, 0, {
+          title: '发布用户',
+          key: 'user_nickname',
+          width: 200
+        })
+        this.columns.splice(1, 0, {
+          title: '发布用户ID',
+          key: 'user_id',
+          width: 100
+        })
+      }
+      this.GetBlog()
     },
     computed: {},
     watch: {
@@ -155,8 +194,10 @@
         deep: true
       }
     },
+    beforeMount: function () {
+    },
     methods: {
-      GetUser () {
+      GetBlog () {
         this.loading = true
         let params = {
           offset: this.Pagination.Size * (this.Pagination.Current - 1),
@@ -164,13 +205,25 @@
           token: this.$store.state.auth.token,
           want_deleted: true
         }
-        this.$http.get('show/user/list', { params })
+        if (this.$store.state.auth.authUser.id !== 1) params['user_id'] = this.$store.state.auth.authUser.id
+        this.$http.get('show/blog/list', { params })
           .then(res => {
             this.Pagination.Total = +res.headers['x-total']
-            this.Users = res.data
-            for (let user of this.Users) {
-              user.created_at = moment.unix(user.created_at).format('YYYY-MM-DD HH:mm:ss')
-              user.gender = user.gender === 0 ? '男' : '女'
+            this.Blogs = res.data
+            let count = this.Pagination.Size * (this.Pagination.Current - 1)
+            for (let blog of this.Blogs) {
+              count += 1
+              blog.show_id = count
+              blog.user_id = blog.user.id
+              blog.user_nickname = blog.user.nickname
+              blog.blog_tag = ''
+              for (let tag of blog.tag) {
+                blog.blog_tag = blog.blog_tag + tag + '; '
+              }
+              if (blog.category === null) blog.category_title = '默认分组'
+              else blog.category_title = blog.category.title
+              blog.created_at = moment.unix(blog.created_at).format('YYYY-MM-DD HH:mm:ss')
+              blog.updated_at = moment.unix(blog.updated_at).format('YYYY-MM-DD HH:mm:ss')
             }
             this.loading = false
           })
@@ -178,21 +231,28 @@
             this.loading = false
           })
       },
-      userShow (index) {
-        this.$router.push({name: 'AdminShowUser', params: {id: this.Users[index].id}})
+      blogShow (index) {
+        this.$router.push({name: 'AdminShowBlogDetail', params: {id: this.Blogs[index].id}})
       },
-      userEdit (index) {
-        this.$router.push({name: 'AdminEdit', params: {id: this.Users[index].id}})
+      blogEdit (index) {
+        this.$http.get('show/blog/' + this.Blogs[index].id, {params: {token: this.$store.state.auth.token}})
+          .then(r => {
+            store.set('BlogContents', r.data.contents)
+            this.$router.push({name: 'AdminEditBlog', params: {id: this.Blogs[index].id}})
+          })
+          .catch(e => {
+            console.log(e)
+          })
       },
-      userChange (index) {
+      blogChange (index) {
         let data = {
           'token': this.$store.state.auth.token
         }
-        if (this.Users[index].deleted_at === null) {
-          this.$http.delete('user/' + this.Users[index].id, {params: {token: this.$store.state.auth.token}})
+        if (this.Blogs[index].deleted_at === null) {
+          this.$http.delete('blog/' + this.Blogs[index].id, {params: {token: this.$store.state.auth.token}})
             .then(r => {
               this.$Notice.success({title: '删除成功'})
-              this.GetUser()
+              this.GetBlog()
             })
             .catch(e => {
               switch (e.response.status) {
@@ -205,20 +265,16 @@
                   this.$Notice.error({title: '无操作权限'})
                   this.$Loading.error()
                   break
-                case 444:
-                  this.$Notice.error({title: '无法删除管理员'})
-                  this.$Loading.error()
-                  break
                 default :
                   this.$Notice.error({title: '未知错误'})
                   this.$Loading.error()
               }
             })
         } else {
-          this.$http.put('user/' + this.Users[index].id, data)
+          this.$http.put('blog/' + this.Blogs[index].id, data)
             .then(r => {
               this.$Notice.success({title: '恢复成功'})
-              this.GetUser()
+              this.GetBlog()
             })
             .catch(e => {
               switch (e.response.status) {
@@ -239,11 +295,11 @@
         }
       },
       title (index) {
-        if (this.Users[index].deleted_at === null) return '删除'
+        if (this.Blogs[index].deleted_at === null) return '删除'
         else return '恢复'
       },
       getType (index) {
-        if (this.Users[index].deleted_at === null) return 'error'
+        if (this.Blogs[index].deleted_at === null) return 'error'
         else return 'warning'
       }
     }

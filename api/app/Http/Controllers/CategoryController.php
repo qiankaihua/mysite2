@@ -33,11 +33,12 @@ class CategoryController extends Controller
                 'avatar' => $user->avatar,
                 'nickname' => $user->nickname,
             ],
+            'category' => [],
         ];
         foreach ($categorys as $key => $category) {
             $category->total = $category->blogs()->count();
             $count -= $category->total;
-            $response[$key] = [
+            $response['category'][$key] = [
                 'id' => $category->id,
                 'title' => $category->title,
                 'total' =>  $category->total,
@@ -81,6 +82,11 @@ class CategoryController extends Controller
         $category = \App\Models\BlogCategory::find($category_id);
         if($category === null) abort(404);
         if($user->id !== $category->user_id && $user->id !== 1) abort(403);
+        $blogs = $category->blogs()->get();
+        foreach ($blogs as $blog) {
+            $blog->category_id = 0;
+            $blog->save();
+        }
         $category->delete();
         return response([
             'success',

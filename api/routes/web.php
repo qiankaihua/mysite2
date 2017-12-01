@@ -40,6 +40,12 @@ $router->group([
 });
 
 $router->group([
+    'prefix' => 'blogEdit',
+], function () use ($router) {
+    $router->post('/image', 'ImageController@Store');
+});
+
+$router->group([
     'prefix' => 'show',
     'middleware' => 'AddTime',
 ], function () use ($router) {

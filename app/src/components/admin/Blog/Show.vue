@@ -1,34 +1,43 @@
 <template>
-  <div class="OtherUserDetail">
+  <div class="ShowBlogList">
     <div class="layout-breadcrumb">
       <i-breadcrumb>
         <i-breadcrumb-item href="/admin/info">Home</i-breadcrumb-item>
-        <i-breadcrumb-item>Profile</i-breadcrumb-item>
-        <i-breadcrumb-item href="/admin/manager">UserList</i-breadcrumb-item>
+        <i-breadcrumb-item href="/admin/blog/list">Blog</i-breadcrumb-item>
+        <i-breadcrumb-item>Show</i-breadcrumb-item>
       </i-breadcrumb>
-    </div>
-    <div class="layout-content">
-      <div class="layout-content-main">
-        <div class="title">待更新</div>
+      <div>
+        NO Page!!
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
-  export default {
-    name: 'OtherUserDetail',
-    data: () => ({}),
-    computed: {},
-    methods: {}
-  }
+    export default {
+      name: '',
+      data: function () {
+        return {
+        }
+      },
+      computed: {},
+      beforeMount: function () {
+      },
+      methods: {}
+    }
 </script>
 
 <style scoped>
-  .OtherUserDetail {
-  }
   .layout-breadcrumb{
     padding: 10px 15px 0;
+  }
+  .editorContainer {
+    width: 90%;
+    height: 80vh;
+    margin-left: 5%;
+    margin-top: 20px;
+    margin-bottom: 20px;
   }
   .layout-content{
     min-height: 200px;
@@ -45,8 +54,5 @@
     line-height: 10vh;
     text-align: center;
     font-size: x-large;
-  }
-  .list {
-    margin: 10px 0;
   }
 </style>

@@ -3,13 +3,13 @@
     <div class="layout-breadcrumb">
       <i-breadcrumb>
         <i-breadcrumb-item href="/admin/info">Home</i-breadcrumb-item>
-        <i-breadcrumb-item>Blog</i-breadcrumb-item>
-        <i-breadcrumb-item>Post</i-breadcrumb-item>
+        <i-breadcrumb-item href="/admin/blog/list">Blog</i-breadcrumb-item>
+        <i-breadcrumb-item>Edit</i-breadcrumb-item>
       </i-breadcrumb>
     </div>
     <div class="layout-content">
       <div class="layout-content-main">
-        <div class="title">发表博客</div>
+        <div class="title">修改博客</div>
         <i-form ref="addBlogValidate" :model="formValidate" :rules="ruleValidate" :label-width="80" onsubmit="return false">
           <i-row>
             <i-col span="16" offset="3">
@@ -48,7 +48,7 @@
         <div class="editorContainer">
           <markdown
             :mdValuesP="msg.mdValue"
-            :fullPageStatusP="false"
+            :fullPagStatusP="false"
             :editStatusP="true"
             :previewStatusP="true"
             :navStatusP="true"
@@ -58,7 +58,7 @@
         </div>
         <i-row>
           <i-col offset="15">
-            <i-button type="primary" shape="circle" size="large" style="width: 200px" @click="Submit">上传</i-button>
+            <i-button type="primary" shape="circle" size="large" style="width: 200px" @click="Submit">保存修改</i-button>
           </i-col>
         </i-row>
       </div>
@@ -68,7 +68,6 @@
 
 <script>
   import markdown from '../MarkDown.vue'
-  import store from 'store'
   export default {
     name: 'AddBlog',
     data () {
@@ -102,12 +101,24 @@
     components: {
       markdown
     },
-    beforeMount: function () {
-      this.token = this.$store.state.auth.token
-      this.msg.mdValue = localStorage.mdValue === undefined ? '# Edit your blog here! \n' +
+    created: function () {
+      this.msg.mdValue = localStorage.BlogContents === undefined ? '# Edit your blog here! \n' +
         '\n' +
         '行内公式使用` \\(在此编写公式\\)`\n' +
-        '行间公式使用`\\[在此编写公式\\]`' : JSON.parse(localStorage.mdValue)
+        '行间公式使用`\\[在此编写公式\\]`' : JSON.parse(localStorage.BlogContents)
+      this.$http.get('show/blog/' + this.$route.params.id, {params: {token: this.$store.state.auth.token}})
+        .then(r => {
+          if (r.data.category === null) this.category_id = 0
+          else this.category_id = r.data.category.id
+          this.formValidate.title = r.data.title
+          for (let tg of r.data.tags) {
+            this.tags.push(tg)
+          }
+        })
+        .catch(e => {
+          console.log(e)
+        })
+      this.token = this.$store.state.auth.token
       let auth = this.$store.state.auth.authUser
       let params = {
         user_id: auth.id,
@@ -135,32 +146,28 @@
     },
     methods: {
       childEventHandler: function (res) {
-        // res会传回一个data,包含属性mdValue和htmlValue，具体含义请自行翻译
         this.msg = res
       },
       Submit: function () {
         event.preventDefault()
         this.$refs.addBlogValidate.validate((valid) => {
           if (valid) {
-            let formdata = new FormData()
-            formdata.append('title', this.formValidate.title)
-            formdata.append('contents', this.msg.mdValue)
-            formdata.append('category_id', this.category_id)
+            let data = {}
+            data.title = this.formValidate.title
+            data.contents = this.msg.mdValue
+            data.category_id = this.category_id
+            data.token = this.token
             let config = {
               headers: {
                 'Content-Type': 'multipart/form-data',
                 'token': this.token
               }
             }
-            this.$http.post('blog/add', formdata, config)
+            this.$http.put('blog/' + this.$route.params.id + '/change', data)
               .then(r => {
-                this.$Notice.success({ title: '上传成功' })
-                store.set('mdValue', '# Edit your blog here! \n' +
-                  '\n' +
-                  '行内公式使用` \\(在此编写公式\\)`\n' +
-                  '行间公式使用`\\[在此编写公式\\]`')
+                this.$Notice.success({ title: '修改成功' })
                 let formdata = new FormData()
-                formdata.append('blog_id', r.data.id)
+                formdata.append('blog_id', this.$route.params.id)
                 for (let tag of this.tags) {
                   formdata.append('value', tag)
                   this.$http.post('tag/add', formdata, config)
@@ -172,7 +179,7 @@
                 }
               })
               .catch(e => {
-                this.$Notice.error({ title: '上传失败' })
+                this.$Notice.error({ title: '修改失败' })
               })
           }
         })

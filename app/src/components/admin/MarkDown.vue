@@ -3,7 +3,6 @@
   <!--markdowm使用vue-mdEditor,mavon-editor-->
   <div class="mdContainer" :class="{ fullPage: fullPageStatus }">
     <div class="navContainer" v-if="navStatus">
-      <div class="nameContainer" v-if="icoStatusP" @click="happyDay">OVEN-mdEditor</div>
       <div class="markContainer">
         <ul class="markListGroup">
           <li class="markListItem" @click="addStrong" title="strong"><b>B</b></li>
@@ -19,41 +18,51 @@
           <li class="markListItem" @click="addQuote" title="quote"><i class="fa fa-quote-left" aria-hidden="true"></i></li>
           <li class="markListItem" @click="addCode"><i class="fa fa-code" aria-hidden="true"></i></li>
           <li class="markListItem" @click="addLink"><i class="fa fa-link" aria-hidden="true"></i></li>
-          <li class="markListItem" @click="addImage"><i class="fa fa-picture-o" aria-hidden="true"></i></li>
+          <li class="markListItem" @click="$refs.fileInput.click()"><i class="fa fa-picture-o" aria-hidden="true"></i></li>
           <li class="markListItem" @click="addTable" title="table"><i class="fa fa-table" aria-hidden="true"></i></li>
           <li class="markListItem" @click="addUl" title="ul-list"><i class="fa fa-list-ul" aria-hidden="true"></i></li>
           <li class="markListItem" @click="addOl" title="ol-list"><i class="fa fa-list-ol" aria-hidden="true"></i></li>
+          <li class="markListItem" @click="addFormula(1)" title="line-formula"><i class="fa fa-subscript" aria-hidden="true"></i></li>
+          <li class="markListItem" @click="addFormula(2)" title="block-formula"><i class="fa fa-superscript" aria-hidden="true"></i></li>
           <li class="markListItem" @click="fullPageFn" title="fullpage"><i class="fa fa-arrows-alt" aria-hidden="true"></i></li>
           <li class="markListItem" @click="previewFn" title="preview"><i class="fa fa-eye-slash" aria-hidden="true"></i></li>
           <li class="markListItem" @click="previewAllFn" title="previewAll"><i class="fa fa-eye" aria-hidden="true"></i></li>
         </ul>
-
+        <input
+          ref="fileInput"
+          type="file"
+          style="display: none"
+          @change="uploadFile"
+        >
       </div>
     </div>
     <div class="mdBodyContainer" :class="{ noMenu: !navStatus }">
-      <div class="editContainer" v-if="editStatus">
+      <div class="editContainer" v-show="editStatus">
         <textarea name="" class="mdEditor" @keydown.9="tabFn" v-scroll="editScroll" v-model="input"></textarea>
       </div>
-      <div class="previewContainer markdown-body" v-scroll="previewScroll" v-html="compiledMarkdown" v-if="previewStatus">
+      <div ref="previewContent" class="previewContainer markdown-body" v-scroll="previewScroll" v-show="previewStatus">
       </div>
     </div>
   </div>
 </template>
 
 <script>
+  import store from 'store'
+  import axios from 'axios'
   import Vue from 'vue'
   import marked from 'marked'
   import scroll from 'vue-scroll'
   import hljs from '../../../static/js/highlight.min.js'
   import range from '../../../static/js/rangeFn.js'
   Vue.use(scroll)
+  let myRenderer = new marked.Renderer()
   marked.setOptions({
-    renderer: new marked.Renderer(),
+    renderer: myRenderer,
     gfm: true,
     tables: true,
-    breaks: false,
+    breaks: true,
     pedantic: false,
-    sanitize: true,
+    sanitize: false,
     smartLists: true,
     smartypants: false,
     highlight: function (code) {
@@ -74,11 +83,17 @@
     }
     that.input = document.querySelector('.mdEditor').value
   }
+  function insertMath (val, that) {
+    let textareaDom = document.querySelector('.mdEditor')
+    range.insertAfterText(textareaDom, val)
+    that.input = document.querySelector('.mdEditor').value
+  }
   export default {
     name: 'markdown',
     props: ['mdValuesP', 'fullPageStatusP', 'editStatusP', 'previewStatusP', 'navStatusP', 'icoStatusP'],
     data () {
       return {
+        formula: {},
         input: this.mdValuesP || '',
         editStatus: Boolean(this.editStatusP),
         previewStatus: Boolean(this.previewStatusP),
@@ -98,15 +113,61 @@
     methods: {
       tabFn: function (evt) {
         insertContent('    ', this)
-        // 屏蔽屌tab切换事件
+        // 屏蔽tab切换事件
         if (evt.preventDefault) {
           evt.preventDefault()
         } else {
           evt.returnValue = false
         }
       },
-      addImage: function (evt) {
-        insertContent('![Vue](https://cn.vuejs.org/images/logo.png)', this)
+      addFormula: function (type) {
+        let textareaDom = document.querySelector('.mdEditor')
+        let point = range.getCursortPosition(textareaDom)
+        if (type === 1) {
+          insertMath(' \\(\\)', this)
+          range.setCaretPosition(textareaDom, point + 3)
+        } else {
+          insertMath('\n\\[\\]', this)
+          range.setCaretPosition(textareaDom, point + 3)
+        }
+      },
+      addImage: function (imgname) {
+        insertContent('![To Be Continue](' + imgname + ')', this)
+      },
+      uploadFile: function (img) {
+        if (img.target.files.length) {
+          this.$Message.loading({
+            content: '上传中...',
+            duration: 0
+          })
+          let formData = new FormData()
+          formData.append('image', img.target.files[0])
+          let config = {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+          this.$http.post('blogEdit/image', formData, config)
+            .then(r => {
+              this.$Message.destroy()
+              this.$refs.fileInput.value = ''
+              this.$Loading.finish()
+              this.$Message.success('上传成功')
+              this.addImage(r.data)
+            })
+            .catch(e => {
+              this.$Message.destroy()
+              this.$refs.fileInput.value = ''
+              this.$Loading.error()
+              switch (e.response.status) {
+                case 422:
+                  this.$Message.warning('只能上传图片')
+                  break
+                default:
+                  this.$Message.error('未知错误，请联系管理员')
+              }
+            })
+        }
       },
       addHTitle: function (index) {
         let tmp = ''
@@ -191,7 +252,7 @@
         insertContent('\n----\n', this)
       },
       addLink: function () {
-        insertContent('[Vue](https://cn.vuejs.org/images/logo.png)', this)
+        insertContent('[To Be Continue](http://www.qiankaihua.top)', this)
       },
       addQuote: function () {
         let textareaDom = document.querySelector('.mdEditor')
@@ -253,38 +314,100 @@
           document.querySelector('.previewContainer').scrollTop = this.maxPreviewScrollHeight * topPercent
         }
       },
-      happyDay: function () {
-        window.open('https://github.com/ovenslove/vue-mdEditor')
-      }
-    },
-    computed: {
-      compiledMarkdown: function () {
-        return marked(this.input, {
-          sanitize: true
+      UUID: function () {
+        let d = new Date().getTime()
+        let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          let r = (d + Math.random() * 16) % 16 | 0
+          d = Math.floor(d / 16)
+          return (c === 'x' ? r : (r & 0x7 | 0x8)).toString(16)
         })
-      }
-    },
-    watch: {
-      input: function () {
+        return uuid
+      },
+      ReplaceMath: function (str) {
+        str = str.replace(/(\\\[(.|\n)*?\\])/g, (match) => {
+          let rep = this.UUID()
+          this.formula[rep] = match
+          return rep
+        })
+        str = str.replace(/(\\\(.*?\\\))/g, (match) => {
+          let rep = this.UUID()
+          this.formula[rep] = match
+          return rep
+        })
+        return str
+      },
+//      ReplaceMath: function (str) {
+//        let flag = true
+//        while (flag) {
+//          let rep = this.UUID()
+//          str = str.replace(/(\\\[(.|\n)*?\\])/, rep)
+//          console.log(RegExp.$1)
+//          if (RegExp.$1 === '') flag = false
+//          this.formula[rep] = RegExp.$1
+//        }
+//        flag = true
+//        while (flag) {
+//          let rep = this.UUID()
+//          str = str.replace(/(\\\(.*?\\\))/, rep)
+//          console.log(RegExp.$1)
+//          if (RegExp.$1 === '') flag = false
+//          this.formula[rep] = RegExp.$1
+//        }
+//        return str
+//      },
+      ReplaceMathBack: function (str) {
+        for (let f in this.formula) {
+          let reg = new RegExp(f, 'g')
+          str = str.replace(reg, this.formula[f])
+        }
+        return str
+      },
+      /* global MathJax:false */
+      getPreview: function () {
         let data = {}
         data.mdValue = this.input
-        data.htmlValue = marked(this.input, {
-          sanitize: true
-        })
+        let str = this.input
+        str = this.ReplaceMath(str)
+        str = marked(str, {
+          sanitize: false
+        }).replace(/<img src="\/?image\/(.*?)/g, `<img src="${axios.defaults.baseURL}show/img/image/$1`)
+        str = this.ReplaceMathBack(str)
+        this.$refs.previewContent.innerHTML = str
+        MathJax.Hub.Queue(['Typeset', MathJax.Hub, this.$refs.previewContent.innerHTML])
+        data.htmlValue = str
         this.$emit('childevent', data)
         let maxEditScrollHeight = document.querySelector('.mdEditor').scrollHeight - document.querySelector('.mdEditor').clientHeight
         let maxPreviewScrollHeight = document.querySelector('.previewContainer').scrollHeight - document.querySelector('.previewContainer').clientHeight
         this.maxEditScrollHeight = maxEditScrollHeight
         this.maxPreviewScrollHeight = maxPreviewScrollHeight
+        store.set('mdValue', this.input)
+      }
+    },
+    mounted: function () {
+      MathJax.Hub.Config({
+        extensions: ['tex2jax.js'],
+        jax: ['input/TeX', 'output/HTML-CSS'],
+        tex2jax: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
+        },
+        'HTML-CSS': { availableFonts: ['TeX'] }
+      })
+      this.getPreview()
+    },
+    watch: {
+      input: function () {
+        this.getPreview()
       }
     }
   }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   /*引入reset文件*/
 
-  @import "../../../static/css/reset";
+  @import "../../../static/css/reset.css";
 
   /*引入github的markdown样式文件*/
 
@@ -293,74 +416,85 @@
   /*引入atom的代码高亮样式文件*/
 
   @import "../../../static/css/atom-one-dark.min.css";
+
+  /* line 1, ../sass/tt.scss */
   .mdContainer {
     width: 100%;
     height: 100%;
     background: lightblue;
-    &.fullPage {
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-    }
-    .navContainer {
-      width: 100%;
-      height: 36px;
-      background: #fff;
-      box-sizing: border-box;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      padding: 0 10px;
-      .nameContainer {
-        color: lightblue;
-        margin-right: 10px;
-        cursor:pointer;
-      }
-      .markContainer {
-        width: auto;
-        height: 100%;
-        margin-left: 0px;
-        ul.markListGroup {
-          height: 100%;
-          width: auto;
-          display: flex;
-          justify-content: flex-start;
-          align-items: center;
-          li.markListItem {
-            list-style: none;
-            width: 20px;
-            height: 20px;
-            margin: 0 2px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            font-size: 12px;
-            color: #333;
-            &:hover {
-              background: #eee;
-            }
-          }
-        }
-      }
-    }
-    .mdBodyContainer {
-      width: 100%;
-      height: calc(100% - 36px);
-      background: #fff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-sizing: border-box;
-      &.noMenu{
-        height: 100%;
-      }
-    }
+  }
+  /* line 5, ../sass/tt.scss */
+  .mdContainer.fullPage {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+  }
+  /* line 11, ../sass/tt.scss */
+  .mdContainer .navContainer {
+    width: 100%;
+    height: 36px;
+    background: #fff;
+    box-sizing: border-box;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0 10px;
+  }
+  /* line 21, ../sass/tt.scss */
+  .mdContainer .navContainer .nameContainer {
+    color: lightblue;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  /* line 26, ../sass/tt.scss */
+  .mdContainer .navContainer .markContainer {
+    width: auto;
+    height: 100%;
+    margin-left: 0px;
+  }
+  /* line 30, ../sass/tt.scss */
+  .mdContainer .navContainer .markContainer ul.markListGroup {
+    height: 100%;
+    width: auto;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  /* line 36, ../sass/tt.scss */
+  .mdContainer .navContainer .markContainer ul.markListGroup li.markListItem {
+    list-style: none;
+    width: 20px;
+    height: 20px;
+    margin: 0 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 12px;
+    color: #333;
+  }
+  /* line 47, ../sass/tt.scss */
+  .mdContainer .navContainer .markContainer ul.markListGroup li.markListItem:hover {
+    background: #eee;
+  }
+  /* line 54, ../sass/tt.scss */
+  .mdContainer .mdBodyContainer {
+    width: 100%;
+    height: calc(100% - 36px);
+    background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+  }
+  /* line 62, ../sass/tt.scss */
+  .mdContainer .mdBodyContainer.noMenu {
+    height: 100%;
   }
 
-  // 编辑区域
+  /* line 69, ../sass/tt.scss */
   .editContainer {
     height: 100%;
     width: 100%;
@@ -369,17 +503,18 @@
     background: #333;
     color: #fff;
     padding: 10px;
-    .mdEditor {
-      height: 100%;
-      width: 100%;
-      background: transparent;
-      outline: none;
-      color: #fff;
-      resize: none;
-    }
+  }
+  /* line 77, ../sass/tt.scss */
+  .editContainer .mdEditor {
+    height: 100%;
+    width: 100%;
+    background: transparent;
+    outline: none;
+    color: #fff;
+    resize: none;
   }
 
-  // 预览区
+  /* line 88, ../sass/tt.scss */
   .previewContainer {
     width: 100%;
     height: 100%;

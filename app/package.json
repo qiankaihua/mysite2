@@ -17,10 +17,13 @@
     "crypto-js": "^3.1.9-1",
     "iview": "^2.6.0",
     "lodash": "^4.17.4",
+    "marked": "^0.3.6",
+    "mathjax": "^2.7.2",
     "moment": "^2.19.1",
     "store": "^2.0.12",
     "vue": "^2.4.2",
     "vue-router": "^2.8.1",
+    "vue-scroll": "^2.0.3",
     "vue-store": "^0.3.1-moved",
     "vuex": "^3.0.1"
   },

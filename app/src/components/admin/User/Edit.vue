@@ -93,7 +93,7 @@
               </form>
             </i-col>
             <i-col span="9">
-              <i-avatar v-if="hasOldAvatar" :src="'data:image/*;base64, ' + oldAvatar" size="large" shape="square" class="avatar" />
+              <i-avatar v-if="hasOldAvatar" :src="oldAvatar" size="large" shape="square" class="avatar" />
               <i-avatar v-else icon="person" size="large" shape="square" class="avatar" />
             </i-col>
           </i-row>
@@ -110,6 +110,7 @@
 
 <script>
   import moment from 'moment'
+  import axios from 'axios'
   import store from 'store'
   export default {
     components: {
@@ -117,7 +118,6 @@
     name: 'AdminEdit',
     data () {
       return {
-        that: this,
         hasOldAvatar: null,
         avatar: null,
         oldAvatar: null,
@@ -136,7 +136,7 @@
         },
         ruleValidate: {
           nickname: [
-            {type: 'string', max: 30, message: '昵称长度不能超过30', trigger: 'blur'}
+            {required: true, type: 'string', max: 30, message: '昵称长度不能超过30', trigger: 'blur'}
           ],
           gender: [],
           birthday: [],
@@ -164,17 +164,9 @@
           this.avatar_name = response.data.avatar
           this.nickname = response.data.nickname
           if (this.avatar_name !== null && this.avatar_name !== undefined) {
-            this.$http.get('show/img/' + this.avatar_name)
-              .then((response) => {
-                this.oldAvatar = response.data
-                this.hasOldAvatar = true
-              })
-              .catch((e) => {
-                sessionStorage.oldAvatar = null
-                this.oldAvatar = null
-                this.hasOldAvatar = false
-                console.log(e)
-              })
+            this.oldAvatar = axios.defaults.baseURL + 'show/img/' + this.avatar_name
+            console.log(this.oldAvatar)
+            this.hasOldAvatar = true
           } else {
             this.oldAvatar = null
             this.hasOldAvatar = false
@@ -193,15 +185,14 @@
           if (valid) {
             that.$Loading.start()
             that.formValidate.birthday = moment(that.formValidate.date).unix()
-            console.log(that.formValidate.birthday)
             let formData = new FormData()
             formData.append('username', that.formValidate.name)
-            if (that.formValidate.nickname !== '') formData.append('nickname', that.formValidate.nickname)
+            if (that.formValidate.nickname !== '' && that.formValidate.nickname !== null) formData.append('nickname', that.formValidate.nickname)
             formData.append('gender', that.formValidate.gender)
             formData.append('email', that.formValidate.mail)
             if (that.formValidate.phone !== '' && that.formValidate.phone !== null) formData.append('phone', that.formValidate.phone)
             if (that.formValidate.birthday !== '' && !isNaN(that.formValidate.birthday)) formData.append('birthday', that.formValidate.birthday)
-            if (that.formValidate.realname !== '') formData.append('realname', that.formValidate.realname)
+            if (that.formValidate.realname !== '' && that.formValidate.realname) formData.append('realname', that.formValidate.realname)
             if (that.avatar !== null && that.avatar !== undefined) formData.append('avatar', that.avatar)
             let config = {
               headers: {
@@ -209,7 +200,6 @@
                 'token': that.token
               }
             }
-            console.log(that.formValidate.phone)
             that.$http.post('user/' + that.$route.params.id + '/edit', formData, config)
               .then((response) => {
                 console.log(response.data)

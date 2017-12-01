@@ -1,44 +1,45 @@
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
-
 /**
  * 1. Set default font family to sans-serif.
  * 2. Prevent iOS and IE text size adjust after device orientation change,
  *    without disabling user zoom.
  */
-
-*{
+/* line 9, ../sass/reset.scss */
+* {
   margin: 0;
   padding: 0;
   border: 0px;
 }
 
+/* line 15, ../sass/reset.scss */
 html {
-  font-family: sans-serif; /* 1 */
-  -ms-text-size-adjust: 100%; /* 2 */
-  -webkit-text-size-adjust: 100%; /* 2 */
+  font-family: sans-serif;
+  /* 1 */
+  -ms-text-size-adjust: 100%;
+  /* 2 */
+  -webkit-text-size-adjust: 100%;
+  /* 2 */
   height: 100%;
 }
 
 /**
  * Remove default margin.
  */
-
+/* line 26, ../sass/reset.scss */
 body {
   margin: 0;
   height: 100%;
-
 }
 
 /* HTML5 display definitions
    ========================================================================== */
-
 /**
  * Correct `block` display not defined for any HTML5 element in IE 8/9.
  * Correct `block` display not defined for `details` or `summary` in IE 10/11
  * and Firefox.
  * Correct `block` display not defined for `main` in IE 11.
  */
-
+/* line 42, ../sass/reset.scss */
 article,
 aside,
 details,
@@ -58,20 +59,22 @@ summary {
  * 1. Correct `inline-block` display not defined in IE 8/9.
  * 2. Normalize vertical alignment of `progress` in Chrome, Firefox, and Opera.
  */
-
+/* line 62, ../sass/reset.scss */
 audio,
 canvas,
 progress,
 video {
-  display: inline-block; /* 1 */
-  vertical-align: baseline; /* 2 */
+  display: inline-block;
+  /* 1 */
+  vertical-align: baseline;
+  /* 2 */
 }
 
 /**
  * Prevent modern browsers from displaying `audio` without controls.
  * Remove excess height in iOS 5 devices.
  */
-
+/* line 75, ../sass/reset.scss */
 audio:not([controls]) {
   display: none;
   height: 0;
@@ -81,7 +84,7 @@ audio:not([controls]) {
  * Address `[hidden]` styling not present in IE 8/9/10.
  * Hide the `template` element in IE 8/9/10/11, Safari, and Firefox < 22.
  */
-
+/* line 85, ../sass/reset.scss */
 [hidden],
 template {
   display: none;
@@ -89,11 +92,10 @@ template {
 
 /* Links
    ========================================================================== */
-
 /**
  * Remove the gray background color from active links in IE 10.
  */
-
+/* line 97, ../sass/reset.scss */
 a {
   background-color: transparent;
 }
@@ -102,7 +104,7 @@ a {
  * Improve readability of focused elements when they are also in an
  * active/hover state.
  */
-
+/* line 106, ../sass/reset.scss */
 a:active,
 a:hover {
   outline: 0;
@@ -110,11 +112,10 @@ a:hover {
 
 /* Text-level semantics
    ========================================================================== */
-
 /**
  * Address styling not present in IE 8/9/10/11, Safari, and Chrome.
  */
-
+/* line 118, ../sass/reset.scss */
 abbr[title] {
   border-bottom: 1px dotted;
 }
@@ -122,7 +123,7 @@ abbr[title] {
 /**
  * Address style set to `bolder` in Firefox 4+, Safari, and Chrome.
  */
-
+/* line 126, ../sass/reset.scss */
 b,
 strong {
   font-weight: bold;
@@ -131,7 +132,7 @@ strong {
 /**
  * Address styling not present in Safari and Chrome.
  */
-
+/* line 135, ../sass/reset.scss */
 dfn {
   font-style: italic;
 }
@@ -140,7 +141,7 @@ dfn {
  * Address variable `h1` font-size and margin within `section` and `article`
  * contexts in Firefox 4+, Safari, and Chrome.
  */
-
+/* line 144, ../sass/reset.scss */
 h1 {
   font-size: 2em;
   margin: 0.67em 0;
@@ -149,7 +150,7 @@ h1 {
 /**
  * Address styling not present in IE 8/9.
  */
-
+/* line 153, ../sass/reset.scss */
 mark {
   background: #ff0;
   color: #000;
@@ -158,7 +159,7 @@ mark {
 /**
  * Address inconsistent and variable font size in all browsers.
  */
-
+/* line 162, ../sass/reset.scss */
 small {
   font-size: 80%;
 }
@@ -166,7 +167,7 @@ small {
 /**
  * Prevent `sub` and `sup` affecting `line-height` in all browsers.
  */
-
+/* line 170, ../sass/reset.scss */
 sub,
 sup {
   font-size: 75%;
@@ -175,21 +176,22 @@ sup {
   vertical-align: baseline;
 }
 
+/* line 178, ../sass/reset.scss */
 sup {
   top: -0.5em;
 }
 
+/* line 182, ../sass/reset.scss */
 sub {
   bottom: -0.25em;
 }
 
 /* Embedded content
    ========================================================================== */
-
 /**
  * Remove border when inside `a` element in IE 8/9/10.
  */
-
+/* line 193, ../sass/reset.scss */
 img {
   border: 0;
 }
@@ -197,18 +199,17 @@ img {
 /**
  * Correct overflow not hidden in IE 9/10/11.
  */
-
+/* line 201, ../sass/reset.scss */
 svg:not(:root) {
   overflow: hidden;
 }
 
 /* Grouping content
    ========================================================================== */
-
 /**
  * Address margin not present in IE 8/9 and Safari.
  */
-
+/* line 212, ../sass/reset.scss */
 figure {
   margin: 1em 40px;
 }
@@ -216,7 +217,7 @@ figure {
 /**
  * Address differences between Firefox and other browsers.
  */
-
+/* line 220, ../sass/reset.scss */
 hr {
   box-sizing: content-box;
   height: 0;
@@ -225,7 +226,7 @@ hr {
 /**
  * Contain overflow in all browsers.
  */
-
+/* line 229, ../sass/reset.scss */
 pre {
   overflow: auto;
 }
@@ -233,7 +234,7 @@ pre {
 /**
  * Address odd `em`-unit font size rendering in all browsers.
  */
-
+/* line 237, ../sass/reset.scss */
 code,
 kbd,
 pre,
@@ -244,33 +245,34 @@ samp {
 
 /* Forms
    ========================================================================== */
-
 /**
  * Known limitation: by default, Chrome and Safari on OS X allow very limited
  * styling of `select`, unless a `border` property is set.
  */
-
 /**
  * 1. Correct color not being inherited.
  *    Known issue: affects color of disabled elements.
  * 2. Correct font properties not being inherited.
  * 3. Address margins set differently in Firefox 4+, Safari, and Chrome.
  */
-
+/* line 260, ../sass/reset.scss */
 button,
 input,
 optgroup,
 select,
 textarea {
-  color: inherit; /* 1 */
-  font: inherit; /* 2 */
-  margin: 0; /* 3 */
+  color: inherit;
+  /* 1 */
+  font: inherit;
+  /* 2 */
+  margin: 0;
+  /* 3 */
 }
 
 /**
  * Address `overflow` set to `hidden` in IE 8/9/10/11.
  */
-
+/* line 274, ../sass/reset.scss */
 button {
   overflow: visible;
 }
@@ -281,7 +283,7 @@ button {
  * Correct `button` style inheritance in Firefox, IE 8/9/10/11, and Opera.
  * Correct `select` style inheritance in Firefox.
  */
-
+/* line 285, ../sass/reset.scss */
 button,
 select {
   text-transform: none;
@@ -294,19 +296,21 @@ select {
  * 3. Improve usability and consistency of cursor style between image-type
  *    `input` and others.
  */
-
+/* line 298, ../sass/reset.scss */
 button,
-html input[type="button"], /* 1 */
+html input[type="button"],
 input[type="reset"],
 input[type="submit"] {
-  -webkit-appearance: button; /* 2 */
-  cursor: pointer; /* 3 */
+  -webkit-appearance: button;
+  /* 2 */
+  cursor: pointer;
+  /* 3 */
 }
 
 /**
  * Re-set default cursor for disabled elements.
  */
-
+/* line 310, ../sass/reset.scss */
 button[disabled],
 html input[disabled] {
   cursor: default;
@@ -315,7 +319,7 @@ html input[disabled] {
 /**
  * Remove inner padding and border in Firefox 4+.
  */
-
+/* line 319, ../sass/reset.scss */
 button::-moz-focus-inner,
 input::-moz-focus-inner {
   border: 0;
@@ -326,7 +330,7 @@ input::-moz-focus-inner {
  * Address Firefox 4+ setting `line-height` on `input` using `!important` in
  * the UA stylesheet.
  */
-
+/* line 330, ../sass/reset.scss */
 input {
   line-height: normal;
 }
@@ -338,11 +342,13 @@ input {
  * 1. Address box sizing set to `content-box` in IE 8/9/10.
  * 2. Remove excess padding in IE 8/9/10.
  */
-
+/* line 342, ../sass/reset.scss */
 input[type="checkbox"],
 input[type="radio"] {
-  box-sizing: border-box; /* 1 */
-  padding: 0; /* 2 */
+  box-sizing: border-box;
+  /* 1 */
+  padding: 0;
+  /* 2 */
 }
 
 /**
@@ -350,7 +356,7 @@ input[type="radio"] {
  * `font-size` values of the `input`, it causes the cursor style of the
  * decrement button to change from `default` to `text`.
  */
-
+/* line 354, ../sass/reset.scss */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   height: auto;
@@ -360,10 +366,12 @@ input[type="number"]::-webkit-outer-spin-button {
  * 1. Address `appearance` set to `searchfield` in Safari and Chrome.
  * 2. Address `box-sizing` set to `border-box` in Safari and Chrome.
  */
-
+/* line 364, ../sass/reset.scss */
 input[type="search"] {
-  -webkit-appearance: textfield; /* 1 */
-  box-sizing: content-box; /* 2 */
+  -webkit-appearance: textfield;
+  /* 1 */
+  box-sizing: content-box;
+  /* 2 */
 }
 
 /**
@@ -371,7 +379,7 @@ input[type="search"] {
  * Safari (but not Chrome) clips the cancel button when the search input has
  * padding (and `textfield` appearance).
  */
-
+/* line 375, ../sass/reset.scss */
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-decoration {
   -webkit-appearance: none;
@@ -380,7 +388,7 @@ input[type="search"]::-webkit-search-decoration {
 /**
  * Define consistent border, margin, and padding.
  */
-
+/* line 384, ../sass/reset.scss */
 fieldset {
   border: 1px solid #c0c0c0;
   margin: 0 2px;
@@ -391,16 +399,18 @@ fieldset {
  * 1. Correct `color` not being inherited in IE 8/9/10/11.
  * 2. Remove padding so people aren't caught out if they zero out fieldsets.
  */
-
+/* line 395, ../sass/reset.scss */
 legend {
-  border: 0; /* 1 */
-  padding: 0; /* 2 */
+  border: 0;
+  /* 1 */
+  padding: 0;
+  /* 2 */
 }
 
 /**
  * Remove default vertical scrollbar in IE 8/9/10/11.
  */
-
+/* line 404, ../sass/reset.scss */
 textarea {
   overflow: auto;
 }
@@ -409,27 +419,29 @@ textarea {
  * Don't inherit the `font-weight` (applied by a rule above).
  * NOTE: the default cannot safely be changed in Chrome and Safari on OS X.
  */
-
+/* line 413, ../sass/reset.scss */
 optgroup {
   font-weight: bold;
 }
 
 /* Tables
    ========================================================================== */
-
 /**
  * Remove most spacing between table cells.
  */
-
+/* line 424, ../sass/reset.scss */
 table {
   border-collapse: collapse;
   border-spacing: 0;
 }
 
+/* line 429, ../sass/reset.scss */
 td,
 th {
   padding: 0;
 }
+
+/* line 433, ../sass/reset.scss */
 .clearfix {
   overflow: hidden;
   _zoom: 1;

@@ -27,7 +27,7 @@
         </i-col>
         <i-col span="19" offset="5">
           <div class="layout-header">
-            <i-avatar v-if="avatar" :src="'data:image/*;base64, ' + avatar" size="large" shape="square" class="avatar" />
+            <i-avatar v-if="avatar" :src="avatar" size="large" shape="square" class="avatar" />
             <i-avatar v-else icon="person" size="large" shape="square" class="avatar" />
             <span class="Nickname">{{ nickname }}</span>
           </div>
@@ -40,6 +40,7 @@
 </template>
 
 <script>
+  import axios from 'axios'
   export default {
     name: 'AdminLayout',
     components: {
@@ -67,8 +68,8 @@
             title: '博客相关',
             items: [
               {to: {name: 'AddBlog'}, title: '发表新博文', show: true},
-              {to: {name: ''}, title: '博文列表', show: true},
-              {to: {name: ''}, title: '博文分类', show: true}
+              {to: {name: 'AdminShowBlog'}, title: '博文列表', show: true},
+              {to: {name: 'AdminCategoryList'}, title: '博文分类', show: true}
             ]
           },
           {
@@ -115,16 +116,8 @@
       this.nickname = auth.nickname
       this.avatar_name = auth.avatar
       if (auth.id === 1) this.SideBar[0].items[2].show = true
-      if (this.avatar_name != null) {
-        this.$http.get('show/img/' + this.avatar_name)
-          .then((response) => {
-            this.avatar = response.data
-          })
-          .catch(function (e) {
-            sessionStorage.avatar = null
-            this.avatar = null
-            console.log(e)
-          })
+      if (this.avatar_name !== null && this.avatar_name !== undefined) {
+        this.avatar = axios.defaults.baseURL + 'show/img/' + this.avatar_name
       } else {
         this.avatar = null
       }

@@ -39,7 +39,7 @@ export default new VueRouter({
           component: r => require(['../components/admin/Home.vue'], r)
         },
         {
-          path: 'edit/:id',
+          path: '/user/:id/edit',
           name: 'AdminEdit',
           component: r => require(['../components/admin/User/Edit.vue'], r)
         },
@@ -49,12 +49,12 @@ export default new VueRouter({
           component: r => require(['../components/admin/User/ResetPwd.vue'], r)
         },
         {
-          path: 'manager',
+          path: 'user/manager',
           name: 'ManagerUser',
           component: r => require(['../components/admin/User/Manager.vue'], r)
         },
         {
-          path: 'manager/user/:id',
+          path: 'manager/:id/user',
           name: 'AdminShowUser',
           component: r => require(['../components/admin/User/OtherUserDetail.vue'], r)
         },
@@ -62,6 +62,26 @@ export default new VueRouter({
           path: 'blog/post',
           name: 'AddBlog',
           component: r => require(['../components/admin/Blog/Add.vue'], r)
+        },
+        {
+          path: 'blog/list',
+          name: 'AdminShowBlog',
+          component: r => require(['../components/admin/Blog/ShowList.vue'], r)
+        },
+        {
+          path: 'blog/:id/edit',
+          name: 'AdminEditBlog',
+          component: r => require(['../components/admin/Blog/Edit.vue'], r)
+        },
+        {
+          path: 'blog/:id/',
+          name: 'AdminShowBlogDetail',
+          component: r => require(['../components/admin/Blog/Show.vue'], r)
+        },
+        {
+          path: 'blogCategory/list',
+          name: 'AdminCategoryList',
+          component: r => require(['../components/admin/Blog/CategoryList.vue'], r)
         }
       ]
     },

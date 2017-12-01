@@ -44,7 +44,7 @@
       <i-row class="buttom">
         <i-col :xs="{span: 18, offset: 3}" :sm="{span: 8, offset: 8}" :md="8" :lg="6" offset="8">
           <i-form-item label="确认密码" prop="rePassword">
-            <i-input v-model="formValidate.rePassword" placeholder="请再次输入密码" type="password">
+            <i-input v-model="formValidate.rePassword" placeholder="Enter your password again" type="password">
               <span slot="prepend">
                 <i-icon :size="22" type="key"></i-icon>
               </span>
