@@ -17,32 +17,58 @@ class AlbumController extends Controller
         $this->validate($request, [
             'user_id' => 'nullable|integer|min:1',
             'limit' => 'nullable|integer|min:1',
-            'offset' => 'nullable|integer|min:1',
+            'offset' => 'nullable|integer|min:0',
         ]);
-        $album_build = \App\Models\Album::where('id', '>', 0);
-        if($request->input('user_id', null) !== null) $album_build = $album_build->where('user_id', '=', $request->input('user_id'));
-        if($request->input('offset', null) !== null) $album_build = $album_build->offset($request->input('offset'));
-        if($request->input('limit', null) !== null) $album_build = $album_build->take($request->input('limit'));
+        $user = \App\Models\User::find($request->input('user_id'));
+        if($user === null) abort(404);
+        $album_build = $user->albums();
+        $max = count($album_build->get());
+        $album_build = $album_build->offset($request->input('offset', 0));
+        $album_build = $album_build->take($request->input('limit', $max));
         $albums = $album_build->get();
-        $response = [];
+        $count = $user->photos()->count();
+        $nocate = \App\Models\Photo::where('user_id', '=', $request->input('user_id'))->where('album_id', '=', '0')->get();
+        $nocate_photo = \App\Models\Photo::where('user_id', '=', $request->input('user_id'))->where('album_id', '=', '0')->latest('updated_at')->take(5)->get();
+        $nocate = count($nocate);
+        $nocate_photos = [];
+        foreach ($nocate_photo as $p) {
+            array_push($nocate_photos, [
+                'name' => $p->name,
+                'path' => $p->url,
+                'id' => $p->id,
+            ]);
+        }
+        $response = [
+            'count' => $count,
+            'nocate' => $nocate,
+            'nocate_photo' => $nocate_photos,
+            'user' => [
+                'id' => $user->id,
+                'nickname' => $user->nickname,
+            ],
+            'album' => [],
+        ];
         foreach ($albums as $key => $album) {
-            $user = $album->user()->first();
-            $avatar = null;
-            if(isset($user->avatar)) {
-                $avatar = str_replace("public/", "", $user->avatar);
-                $avatar = str_replace(".", '_', $avatar);
+            $album->total = $album->photos()->count();
+            $photos = $album->photos()->latest('updated_at')->take(5)->get();
+            $photo = [];
+            foreach ($photos as $p) {
+                array_push($photo, [
+                    'name' => $p->name,
+                    'path' => $p->url,
+                    'id' => $p->id,
+                ]);
             }
-            $response[$key] = [
+            $response['album'][$key] = [
                 'id' => $album->id,
-                'user' => [
-                    'id' => $user->id,
-                    'avatar' => $avatar,
-                    'nickname' => $user->nickname,
-                ],
+                'total' =>  $album->total,
                 'title' => $album->title,
+                'intro' => $album->intro,
+                'photo' => $photo,
+                'created_at' => $album->created_at,
             ];
         }
-        return response($response);
+        return response($response)->header('X-total', $max);
     }
     public function ShowDetail(Request $request, $album_id) {
         $album = \App\Models\Album::find($album_id);

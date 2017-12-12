@@ -47,13 +47,12 @@
 </template>
 
 <script>
-  import store from 'store'
   import axios from 'axios'
   import Vue from 'vue'
   import marked from 'marked'
   import scroll from 'vue-scroll'
-  import hljs from '../../../static/js/highlight.min.js'
-  import range from '../../../static/js/rangeFn.js'
+  import hljs from 'highlight.js'
+  import * as range from './js/rangeFn.js'
   Vue.use(scroll)
   let myRenderer = new marked.Renderer()
   marked.setOptions({
@@ -132,7 +131,7 @@
         }
       },
       addImage: function (imgname) {
-        insertContent('![To Be Continue](' + imgname + ')', this)
+        insertContent('![To Be Continue height="" width=""](' + imgname + ')', this)
       },
       uploadFile: function (img) {
         if (img.target.files.length) {
@@ -380,7 +379,6 @@
         let maxPreviewScrollHeight = document.querySelector('.previewContainer').scrollHeight - document.querySelector('.previewContainer').clientHeight
         this.maxEditScrollHeight = maxEditScrollHeight
         this.maxPreviewScrollHeight = maxPreviewScrollHeight
-        store.set('mdValue', this.input)
       }
     },
     mounted: function () {
@@ -399,6 +397,9 @@
     watch: {
       input: function () {
         this.getPreview()
+      },
+      mdValuesP: function (newVal, oldVal) { // watch it
+        this.input = newVal
       }
     }
   }
@@ -407,21 +408,22 @@
 <style scoped>
   /*引入reset文件*/
 
-  @import "../../../static/css/reset.css";
+  @import "./css/reset.css";
 
   /*引入github的markdown样式文件*/
 
-  @import "../../../static/css/github-markdown.css";
+  @import "./css/github-markdown.css";
 
   /*引入atom的代码高亮样式文件*/
 
-  @import "../../../static/css/atom-one-dark.min.css";
+  @import "./css/atom-one-dark.min.css";
 
   /* line 1, ../sass/tt.scss */
   .mdContainer {
     width: 100%;
     height: 100%;
     background: lightblue;
+    text-align: left;
   }
   /* line 5, ../sass/tt.scss */
   .mdContainer.fullPage {

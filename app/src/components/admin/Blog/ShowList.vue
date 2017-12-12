@@ -11,6 +11,24 @@
       <div class="layout-content-main">
         <div class="title">博文管理</div>
         <i-row>
+          <i-col :span="6" v-if="isAdmin">
+            <i-select v-model="user_id" class="select-user" @on-change="ChangeUser">
+              <i-option v-for="item in users" :value="item.user_id" :key="item.user_id" :label="item.nickname">
+                <span>{{ item.nickname }}</span>
+                <span class="blog-sum">{{ item.blog_sum }}</span>
+              </i-option>
+            </i-select>
+          </i-col>
+          <i-col :span="6">
+            <i-select v-model="category_id" class="select-user" @on-change="ChangeCategory" :disabled="disable">
+              <i-option v-for="item in category" :value="item.category_id" :key="item.category_id" :label="item.title">
+                <span>{{ item.title }}</span>
+                <span class="blog-sum">{{ item.blog_sum }}</span>
+              </i-option>
+            </i-select>
+          </i-col>
+        </i-row>
+        <i-row>
           <i-col :span="24" align="right">
             <i-page
               size="small" show-elevator show-sizer show-total
@@ -86,7 +104,6 @@
                     style: {
                     },
                     props: {
-//                      type: 'border',
                       color: 'blue'
                     }
                   }, tag)
@@ -157,6 +174,12 @@
             }
           }
         ],
+        isAdmin: false,
+        disable: true,
+        user_id: 0,
+        users: [],
+        category_id: -1,
+        category: [],
         Blogs: [],
         loading: false,
         Pagination: {
@@ -170,7 +193,12 @@
       let page = (this.$route.query.page || '').split(',')
       this.Pagination.Current = +page[0] || 1
       this.Pagination.Size = +page[1] || 10
+      this.user_id = localStorage.userCategory === undefined ? this.$store.state.auth.authUser.id : JSON.parse(localStorage.userCategory)
+      this.GetCategory()
+      this.category_id = localStorage.blogCategory === undefined ? -1 : JSON.parse(localStorage.blogCategory)
       if (this.$store.state.auth.authUser.id === 1) {
+        this.GetUser()
+        this.isAdmin = true
         this.columns.splice(1, 0, {
           title: '发布用户',
           key: 'user_nickname',
@@ -194,9 +222,70 @@
         deep: true
       }
     },
-    beforeMount: function () {
-    },
     methods: {
+      GetUser: function () {
+        let params = {
+          token: this.$store.state.auth.token,
+          want_deleted: true
+        }
+        this.users.push({
+          user_id: 0,
+          nickname: '查看全部',
+          blog_sum: null
+        })
+        this.$http.get('show/user/list', { params })
+          .then(res => {
+            let Users = res.data
+            for (let user of Users) {
+              this.users.push({
+                nickname: user.nickname,
+                blog_sum: user.blog,
+                user_id: user.id
+              })
+            }
+          })
+          .catch(e => {
+            console.log(e)
+          })
+      },
+      GetCategory: function () {
+        this.category = []
+        this.category.push({
+          category_id: -1,
+          title: '查看全部',
+          blog_sum: null
+        })
+        this.category.push({
+          category_id: 0,
+          title: '查看未分类',
+          blog_sum: null
+        })
+        if (this.user_id === 0) {
+          this.disable = true
+          return
+        }
+        this.disable = false
+        let params = {
+          user_id: this.user_id,
+          token: this.$store.state.auth.token,
+          want_deleted: true
+        }
+        this.$http.get('show/category/list', { params })
+          .then(res => {
+            this.category[1].blog_sum = res.data.nocate
+            let Cates = res.data.category
+            for (let cate of Cates) {
+              this.category.push({
+                title: cate.title,
+                blog_sum: cate.total,
+                category_id: cate.id
+              })
+            }
+          })
+          .catch(e => {
+            console.log(e)
+          })
+      },
       GetBlog () {
         this.loading = true
         let params = {
@@ -205,10 +294,13 @@
           token: this.$store.state.auth.token,
           want_deleted: true
         }
+        if (this.user_id !== 0) params['user_id'] = this.user_id
+        if (this.category_id !== -1) params['category_id'] = this.category_id
         if (this.$store.state.auth.authUser.id !== 1) params['user_id'] = this.$store.state.auth.authUser.id
         this.$http.get('show/blog/list', { params })
           .then(res => {
-            this.Pagination.Total = +res.headers['x-total']
+            if (this.category_id !== -1) this.Pagination.Total = +res.headers['seleted']
+            else this.Pagination.Total = +res.headers['x-total']
             this.Blogs = res.data
             let count = this.Pagination.Size * (this.Pagination.Current - 1)
             for (let blog of this.Blogs) {
@@ -235,14 +327,7 @@
         this.$router.push({name: 'AdminShowBlogDetail', params: {id: this.Blogs[index].id}})
       },
       blogEdit (index) {
-        this.$http.get('show/blog/' + this.Blogs[index].id, {params: {token: this.$store.state.auth.token}})
-          .then(r => {
-            store.set('BlogContents', r.data.contents)
-            this.$router.push({name: 'AdminEditBlog', params: {id: this.Blogs[index].id}})
-          })
-          .catch(e => {
-            console.log(e)
-          })
+        this.$router.push({name: 'AdminEditBlog', params: {id: this.Blogs[index].id}})
       },
       blogChange (index) {
         let data = {
@@ -301,6 +386,15 @@
       getType (index) {
         if (this.Blogs[index].deleted_at === null) return 'error'
         else return 'warning'
+      },
+      ChangeUser: function () {
+        store.set('userCategory', this.user_id)
+        this.GetCategory()
+        this.GetBlog()
+      },
+      ChangeCategory: function () {
+        store.set('blogCategory', this.category_id)
+        this.GetBlog()
       }
     }
   }
@@ -328,5 +422,13 @@
   }
   .list {
     margin: 10px 0;
+  }
+  .select-user {
+    width: 200px;
+    margin-left: 30px;
+  }
+  .blog-sum {
+    float: right;
+    color: #cccccc;
   }
 </style>

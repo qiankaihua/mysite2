@@ -77,9 +77,9 @@
             icon: 'images',
             title: '照片相关',
             items: [
-              {to: {name: ''}, title: '查看相册', show: true},
+              {to: {name: 'AdminAlbumList'}, title: '查看相册', show: true},
               {to: {name: ''}, title: '新建相册', show: true},
-              {to: {name: ''}, title: '上传图像', show: true}
+              {to: {name: 'AddPhoto'}, title: '上传图像', show: true}
             ]
           }
         ]

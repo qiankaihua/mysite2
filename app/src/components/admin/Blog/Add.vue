@@ -79,7 +79,7 @@
         category: [
           {
             value: 0,
-            total: 7,
+            total: 0,
             label: '默认分组'
           }
         ],
@@ -96,7 +96,8 @@
         },
         msg: {
           mdValue: '# Edit your blog here!'
-        }
+        },
+        mdValue: ''
       }
     },
     components: {
@@ -119,7 +120,7 @@
           let cc = r.data.count
           for (let cate of originCategory) {
             cc = cc - cate.total
-            this.category.append({
+            this.category.push({
               value: cate.id,
               label: cate.title,
               total: cate.total
@@ -137,6 +138,7 @@
       childEventHandler: function (res) {
         // res会传回一个data,包含属性mdValue和htmlValue，具体含义请自行翻译
         this.msg = res
+        this.mdValue = this.msg.mdValue
       },
       Submit: function () {
         event.preventDefault()
@@ -159,9 +161,9 @@
                   '\n' +
                   '行内公式使用` \\(在此编写公式\\)`\n' +
                   '行间公式使用`\\[在此编写公式\\]`')
-                let formdata = new FormData()
-                formdata.append('blog_id', r.data.id)
                 for (let tag of this.tags) {
+                  let formdata = new FormData()
+                  formdata.append('blog_id', r.data.id)
                   formdata.append('value', tag)
                   this.$http.post('tag/add', formdata, config)
                     .then(r => {
@@ -198,6 +200,11 @@
         }
         this.newTag = ''
         this.show = false
+      }
+    },
+    watch: {
+      mdValue: function (newV, oldV) {
+        store.set('mdValue', newV)
       }
     }
   }

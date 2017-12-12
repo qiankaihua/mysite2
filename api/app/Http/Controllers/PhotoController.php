@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\Controller;
+use Ramsey\Uuid\uuid;
 
 class PhotoController extends Controller
 {
@@ -20,8 +21,10 @@ class PhotoController extends Controller
             'limit' => 'nullable|integer|min:1',
             'offset' => 'nullable|integer|min:0',
             'type' => 'nullable|string|in:random,list',
+            'only_delete' => 'nullable|string|in:true,false',
         ]);
         $photo_build = \App\Models\Photo::where('id', '>', '0');
+        if($request->input('only_delete', 'false') === 'true') $photo_build = \App\Models\Photo::onlyTrashed()->where('id', '>', '0');
         if($request->input('user_id', null) !== null) $photo_build->where('user_id', '=', $request->input('user_id'));
         if($request->input('album_id', null) !== null) $photo_build->where('album_id', '=', $request->input('album_id'));
         if($request->input('offset', null) !== null) $photo_build->offset($request->input('offset'), 0);
@@ -54,7 +57,7 @@ class PhotoController extends Controller
                     'title' => $album->title,
                     'intro' => $album->intro,
                 ],
-                'url' => $url,
+                'path' => $url,
                 'name' => $photo->name,
                 'created_at' => $photo->created_at->timestamp,
             ];
@@ -64,18 +67,23 @@ class PhotoController extends Controller
     public function Store(Request $request) {
         $this->validate($request, [
             'photo' => 'required|image',
-            'name' => 'required|string|max:30',
+            'name' => 'nullable|string|max:30',
             'album_id' => 'nullable|integer|min:1',
         ]);
         $user = $request->input('now_user', null);
         if($user === null) abort(401);
-        $photo = \App\Models\Photo;
-        $photo->name = clean($request->input('name'));
-        if($request->input('album_id', null) !== null) $photo->album_id = $request->input('album_id');
-        $path = $request->file('photo')->store('public/photo');
-        $photo->url = $path;
+        $photo = new \App\Models\Photo;
+        $photo->name = clean($request->input('name', $request->file('photo')->getClientOriginalName()));
+        $photo->album_id = $request->input('album_id', 0);
+        $extension = $request->file('photo')->extension();
+        $image_name = $request->file('photo')->move('public/photo', Uuid::uuid4()->toString().'.'.$extension);
+        $image_name = str_replace("public/", "", $image_name);
+        $image_name = str_replace(".", '_', $image_name);
+        $photo->url = $image_name;
+        $user->photos()->save($photo);
         return response([
-            'success',
+            'id' => $photo->id,
+            'path' => $image_name,
         ]);
     }
     public function Change(Request $request, $photo_id) {
@@ -91,7 +99,7 @@ class PhotoController extends Controller
         if($request->input('name', null) !== null) $photo->name = clean($request->input('name'));
         if($request->input('album_id', null) !== null) $photo->album_id = $request->input('album_id');
         return response([
-            'success',
+            'id' => $photo->id,
         ]);
     }
     public function Delete(Request $request, $photo_id) {

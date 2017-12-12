@@ -1,33 +1,33 @@
 <template>
-  <div class="CategoryList">
+  <div class="AlbumList">
     <div class="layout-breadcrumb">
       <i-breadcrumb>
         <i-breadcrumb-item href="/admin/info">Home</i-breadcrumb-item>
-        <i-breadcrumb-item>Blog</i-breadcrumb-item>
-        <i-breadcrumb-item>CategoryList</i-breadcrumb-item>
+        <i-breadcrumb-item>Image</i-breadcrumb-item>
+        <i-breadcrumb-item>AlbumList</i-breadcrumb-item>
       </i-breadcrumb>
     </div>
     <div class="layout-content">
       <div class="layout-content-main">
-        <div class="title">文章分类管理</div>
+        <div class="title">相册管理</div>
         <i-row>
           <i-col :span="12" v-if="isAdmin">
             <i-select v-model="user_id" class="select-user" @on-change="ChangeUser">
               <i-option v-for="item in users" :value="item.user_id" :key="item.user_id" :label="item.nickname">
                 <span>{{ item.nickname }}</span>
-                <span class="category-sum">{{ item.category_sum }}</span>
+                <span class="album-sum">{{ item.album_sum }}</span>
               </i-option>
             </i-select>
           </i-col>
           <i-col :offset="12" align="right">
-            <i-button @click="modal = !modal" type="primary" class="add-button">添加分类</i-button>
+            <i-button @click="modal = !modal" type="primary" class="add-button">添加相册</i-button>
             <i-modal v-model="modal">
               <p slot="header">
-                <span>添加文章分类</span>
+                <span>添加相册</span>
               </p>
               <div style="text-align:center">
                 <span style="margin-right: 20px;">标题</span>
-                <i-input v-model="newTitle" placeholder="输入分类标题" style="width: 70%"></i-input>
+                <i-input v-model="newTitle" placeholder="输入相册标题" style="width: 70%"></i-input>
               </div>
               <div slot="footer">
                 <i-button @click="AddCategory" type="primary" class="add-button">确定添加</i-button>
@@ -37,7 +37,7 @@
           <i-col>
             <i-modal v-model="modal2">
               <p slot="header">
-                <span>修改分类</span>
+                <span>修改相册</span>
               </p>
               <div style="text-align:center">
                 <span style="margin-right: 20px;">标题</span>
@@ -48,25 +48,25 @@
               </div>
             </i-modal>
           </i-col>
-          <i-col>
-            <i-modal v-model="modal3">
-              <p slot="header">
-                <span>移动文章</span>
-              </p>
-              <div style="text-align:center">
-                <span style="margin-right: 20px;">选择分类：</span>
-                <i-select v-model="moveToCategory" class="select-category" :disabled="disable">
-                  <i-option v-for="item in CategoryChange" :value="item.value" :key="item.value" :label="item.label">
-                    <span>{{ item.label }}</span>
-                    <span class="sum-blog-per-cate">{{ item.total }}</span>
-                  </i-option>
-                </i-select>
-              </div>
-              <div slot="footer">
-                <i-button @click="EditBlogCategory" type="warning" class="add-button">确定修改</i-button>
-              </div>
-            </i-modal>
-          </i-col>
+          <!--<i-col>-->
+            <!--<i-modal v-model="modal3">-->
+              <!--<p slot="header">-->
+                <!--<span>移动图片</span>-->
+              <!--</p>-->
+              <!--<div style="text-align:center">-->
+                <!--<span style="margin-right: 20px;">选择分类：</span>-->
+                <!--<i-select v-model="moveToCategory" class="select-category" :disabled="disable">-->
+                  <!--<i-option v-for="item in CategoryChange" :value="item.value" :key="item.value" :label="item.label">-->
+                    <!--<span>{{ item.label }}</span>-->
+                    <!--<span class="sum-blog-per-cate">{{ item.total }}</span>-->
+                  <!--</i-option>-->
+                <!--</i-select>-->
+              <!--</div>-->
+              <!--<div slot="footer">-->
+                <!--<i-button @click="EditBlogCategory" type="warning" class="add-button">确定修改</i-button>-->
+              <!--</div>-->
+            <!--</i-modal>-->
+          <!--</i-col>-->
         </i-row>
         <i-row>
           <i-col :span="24" align="right">
@@ -80,27 +80,28 @@
             ></i-page>
           </i-col>
         </i-row>
-        <i-row :key="idx" v-for="(cate, idx) in Category">
+        <i-row :key="idx" v-for="(album, idx) in Album">
           <i-col span="16" align="center" offset="4">
-            <i-card class="cate-card">
+            <i-card class="album-card">
               <p slot="title">
                 <i-icon type="quote"></i-icon>
-                {{cate.title}}
+                {{album.title}}
               </p>
-              <p slot="extra" class="blog-sum">
-                {{cate.total}}
-                <i-button v-if="cate.id" @click="ShowEditCategory(cate.id)" type="primary" class="cate-button">修改</i-button>
-                <i-button v-if="cate.id" @click="DeleteCategory(cate.id)" type="error" class="cate-button">删除</i-button>
+              <p slot="extra" class="photo-sum">
+                {{album.total}}
+                <i-button v-if="album.id" @click="ShowEditAlbum(album.id)" type="primary" class="album-button">修改</i-button>
+                <i-button v-if="album.id" @click="DeleteAlbum(album.id)" type="error" class="album-button">删除</i-button>
               </p>
-              <ul class="cate-ul">
-                <li v-for="blog in cate.blog" class="cate-li">
-                  <a @click="ToBlogDetail(blog.id)">{{ blog['title'] }}</a>
-                  <i-button type="primary" shape="circle" size="small" class="edit-blog" @click="ShowModal3(blog.id)">移至</i-button>
+              <ul class="album-ul">
+                <li v-for="photo in album.photo" class="album-li">
+                  图片
+                  <!--<a @click="ToPhoneDetail(blog.id)">{{ blog['title'] }}</a>-->
+                  <!--<i-button type="primary" shape="circle" size="small" class="edit-blog" @click="ShowModal3(blog.id)">移至</i-button>-->
                   <hr>
                 </li>
               </ul>
-              <p class="create-date" v-if="cate.created_at">创建于{{cate.created_at}}</p>
-              <i-button v-if="cate.total > 5" class="more-blog" @click="ShowCategoryDetail(cate.id)">查看更多</i-button>
+              <p class="create-date" v-if="album.created_at">创建于{{album.created_at}}</p>
+              <i-button v-if="album.total > 5" class="more-photo" @click="ShowAlbumDetail(album.id)">查看更多</i-button>
             </i-card>
           </i-col>
         </i-row>
@@ -135,19 +136,19 @@
         disable: true,
         newTitle: '',
         editTitle: '',
-        CategoryChange: [],
-        moveToCategory: 0,
+        AlbumChange: [],
+        moveToAlbum: 0,
         movedBlog: 0,
         editId: 0,
         users: [
           {
             user_id: 0,
-            category_sum: 0,
+            album_sum: 0,
             nickname: '选择用户'
           }
         ],
         user_id: 1,
-        Category: [],
+        Album: [],
         Pagination: {
           Total: 0,
           Current: 1,
@@ -168,7 +169,7 @@
       let page = (this.$route.query.page || '').split(',')
       this.Pagination.Current = +page[0] || 1
       this.Pagination.Size = +page[1] || 10
-      this.GetCategory()
+      this.GetAlbum()
     },
     watch: {
       Pagination: {
@@ -181,17 +182,17 @@
     },
     computed: {},
     methods: {
-      GetCategory: function () {
+      GetAlbum: function () {
         let params = {
           user_id: this.user_id,
           offset: this.Pagination.Size * (this.Pagination.Current - 1),
           limit: this.Pagination.Size,
           token: this.$store.state.auth.token
         }
-        this.$http.get('show/category/list', {params})
+        this.$http.get('show/album/list', {params})
           .then(res => {
-            this.Category = []
-            this.Category.push({
+            this.Album = []
+            this.Album.push({
               id: 0,
               title: '默认分组',
               total: res.data.nocate,
@@ -399,7 +400,7 @@
 </script>
 
 <style scoped>
-  .CategoryList {
+  .AlbumList {
   }
   .layout-breadcrumb{
     padding: 10px 15px 0;
@@ -427,30 +428,30 @@
     width: 300px;
     margin-left: 30px;
   }
-  .category-sum {
+  .album-sum {
     float: right;
     color: #cccccc;
   }
-  .blog-sum {
+  .photo-sum {
     color: #aaaaaa;
   }
-  .cate-button {
+  .album-button {
     margin-left: 10px;
   }
-  .cate-card {
+  .album-card {
     text-align: left;
     margin-bottom: 10px;
     margin-top: 10px;
   }
-  .cate-ul {
+  .album-ul {
   }
-  .cate-li {
+  .album-li {
     margin-top: 15px;
   }
-  .more-blog {
+  .more-photo {
     margin-top: 10px;
   }
-  .edit-blog {
+  .edit-photo {
     float: right;
   }
   hr {
@@ -463,13 +464,13 @@
   ol {
     list-style: none !important;
   }
-  .select-category {
+  .select-album {
     width: 200px;
     margin-left: auto;
     margin-top: 20px;
     margin-bottom: 20px;
   }
-  .sum-blog-per-cate {
+  .sum-photo-per-album {
     float: right;
     color: #cccccc;
   }

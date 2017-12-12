@@ -102,14 +102,11 @@
       markdown
     },
     created: function () {
-      this.msg.mdValue = localStorage.BlogContents === undefined ? '# Edit your blog here! \n' +
-        '\n' +
-        '行内公式使用` \\(在此编写公式\\)`\n' +
-        '行间公式使用`\\[在此编写公式\\]`' : JSON.parse(localStorage.BlogContents)
       this.$http.get('show/blog/' + this.$route.params.id, {params: {token: this.$store.state.auth.token}})
         .then(r => {
           if (r.data.category === null) this.category_id = 0
           else this.category_id = r.data.category.id
+          this.msg.mdValue = r.data.contents
           this.formValidate.title = r.data.title
           for (let tg of r.data.tags) {
             this.tags.push(tg)
@@ -130,7 +127,7 @@
           let cc = r.data.count
           for (let cate of originCategory) {
             cc = cc - cate.total
-            this.category.append({
+            this.category.push({
               value: cate.id,
               label: cate.title,
               total: cate.total
@@ -166,9 +163,9 @@
             this.$http.put('blog/' + this.$route.params.id + '/change', data)
               .then(r => {
                 this.$Notice.success({ title: '修改成功' })
-                let formdata = new FormData()
-                formdata.append('blog_id', this.$route.params.id)
                 for (let tag of this.tags) {
+                  let formdata = new FormData()
+                  formdata.append('blog_id', this.$route.params.id)
                   formdata.append('value', tag)
                   this.$http.post('tag/add', formdata, config)
                     .then(r => {
@@ -177,6 +174,7 @@
                       console.log(e)
                     })
                 }
+                this.$router.push({name: 'AdminShowBlogDetail', params: {id: this.$route.params.id}})
               })
               .catch(e => {
                 this.$Notice.error({ title: '修改失败' })
@@ -185,6 +183,22 @@
         })
       },
       CloseTag: function (event, name) {
+        let config = {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'token': this.token
+          }
+        }
+        let formdata = new FormData()
+        formdata.append('blog_id', this.$route.params.id)
+        formdata.append('value', this.tags[name])
+        this.$http.post('tag/add', formdata, config)
+          .then(r => {
+            this.$http.delete('tag/' + r.data, {params: {token: this.$store.state.auth.token}})
+          })
+          .catch(e => {
+            console.log(e)
+          })
         const index = this.tags.indexOf(name)
         this.tags.splice(index, 1)
       },

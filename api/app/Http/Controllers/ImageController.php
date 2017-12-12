@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
+use Mockery\Exception;
 use Ramsey\Uuid\Uuid;
 
 class ImageController extends Controller
@@ -19,7 +20,8 @@ class ImageController extends Controller
         $path = $img_name;
         $path = str_replace("_", '.',$path);
         if($folder_name !== null) $path = $folder_name.'/'.$path;
-        $file = file_get_contents(base_path('public/public/') . $path);
+        if (file_exists(base_path('public/public/') . $path)) $file = file_get_contents(base_path('public/public/') . $path);
+        else abort(404);
         $mime_type = mime_content_type(base_path('public/public/') . $path);
 //        header("content-type:image/*");
         header('content-type:' . $mime_type);

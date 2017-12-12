@@ -82,6 +82,16 @@ export default new VueRouter({
           path: 'blogCategory/list',
           name: 'AdminCategoryList',
           component: r => require(['../components/admin/Blog/CategoryList.vue'], r)
+        },
+        {
+          path: 'albums/list',
+          name: 'AdminAlbumList',
+          component: r => require(['../components/admin/Image/AlbumList.vue'], r)
+        },
+        {
+          path: 'photo/add',
+          name: 'AddPhoto',
+          component: r => require(['../components/admin/Image/AddPhoto.vue'], r)
         }
       ]
     },

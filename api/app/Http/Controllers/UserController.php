@@ -140,6 +140,8 @@ class UserController extends Controller
             }
             $blog_number = count($user->blogs()->get());
             $photo_number = count($user->photos()->get());
+            $category_number = count($user->categorys()->get());
+            $album_number = count($user->albums()->get());
             $response[$key] = [
                 'id' => $user->id,
                 'nickname' => $user->nickname,
@@ -147,6 +149,8 @@ class UserController extends Controller
                 'avatar' => $avatar,
                 'blog' => $blog_number,
                 'photos' => $photo_number,
+                'category' => $category_number,
+                'album' => $album_number,
                 'created_at' => $user->created_at->timestamp,
                 'deleted_at' => $user->deleted_at === null ? null : strtotime($user->deleted_at),
             ];

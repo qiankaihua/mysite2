@@ -88,8 +88,8 @@ $router->group([
     $router->delete('{blog_id}', 'BlogController@Delete');
     $router->put('{blog_id}', 'BlogController@Restore');
     $router->put('{blog_id}/change', 'BlogController@Change');
-    $router->post('{blog_id}/star', 'BlogController@Star');
-    $router->delete('{blog_id}/star', 'BlogController@Star');
+    $router->put('{blog_id}/star', 'BlogController@Star');
+//    $router->delete('{blog_id}/star', 'BlogController@Star');
 });
 
 $router->group([

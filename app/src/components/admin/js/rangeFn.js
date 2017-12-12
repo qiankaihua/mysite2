@@ -1,28 +1,28 @@
 // 获取光标位置
-function getCursortPosition (textDom) {
-  let cursorPos = 0
+export const getCursortPosition = (textDom) => {
+  let cursorPosition = 0
   if (document.selection) {
         // IE Support
     textDom.focus()
     let selectRange = document.selection.createRange()
     selectRange.moveStart('character', -textDom.value.length)
-    cursorPos = selectRange.text.length
+    cursorPosition = selectRange.text.length
   } else if (textDom.selectionStart || textDom.selectionStart === '0') {
         // Firefox support
-    cursorPos = textDom.selectionStart
+    cursorPosition = textDom.selectionStart
   }
-  return cursorPos
+  return cursorPosition
 }
 
 // 设置光标位置
-function setCaretPosition (textDom, pos) {
+export const setCaretPosition = (textDom, pos) => {
   if (textDom.setSelectionRange) {
         // IE Support
     textDom.focus()
     textDom.setSelectionRange(pos, pos)
   } else if (textDom.createTextRange) {
         // Firefox support
-    var range = textDom.createTextRange()
+    let range = textDom.createTextRange()
     range.collapse(true)
     range.moveEnd('character', pos)
     range.moveStart('character', pos)
@@ -30,8 +30,9 @@ function setCaretPosition (textDom, pos) {
   }
 }
 // 获取选中文字
-function getSelectText () {
-  var userSelection, text
+export const getSelectText = () => {
+  let userSelection
+  let text
   if (window.getSelection) {
         // Firefox support
     userSelection = window.getSelection()
@@ -52,7 +53,7 @@ function getSelectText () {
  *     startPos  [Int]  起始位置
  *     endPos  [Int]  终点位置
  */
-function setSelectText (textDom, startPos, endPos) {
+export const setSelectText = (textDom, startPos, endPos) => {
   startPos = parseInt(startPos)
   endPos = parseInt(endPos)
   let textLength = textDom.value.length
@@ -77,7 +78,7 @@ function setSelectText (textDom, startPos, endPos) {
     }
     if (textDom.createTextRange) {
             // IE Support
-      var range = textDom.createTextRange()
+      let range = textDom.createTextRange()
       range.moveStart('character', -textLength)
       range.moveEnd('character', -textLength)
       range.moveStart('character', startPos)
@@ -97,7 +98,7 @@ function setSelectText (textDom, startPos, endPos) {
  *     textDom  [JavaScript DOM String] 当前对象
  *     value  [String]  要插入的文本
  */
-function insertAfterText (textDom, value) {
+export const insertAfterText = (textDom, value) => {
   let selectRange
   if (document.selection) {
         // IE Support
@@ -119,12 +120,4 @@ function insertAfterText (textDom, value) {
     textDom.value += value
     textDom.focus()
   }
-}
-
-module.exports = {
-  getCursortPosition,
-  setCaretPosition,
-  getSelectText,
-  setSelectText,
-  insertAfterText
 }
