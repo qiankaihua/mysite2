@@ -28,3 +28,6 @@ Homestead.json
 .DS_Store
 .idea/
 *.swp
+public/avatar/*
+public/photo/*
+public/image/*
