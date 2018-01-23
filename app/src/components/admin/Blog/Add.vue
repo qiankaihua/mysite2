@@ -172,6 +172,7 @@
                       console.log(e)
                     })
                 }
+                this.$router.push({name: 'AdminShowBlogDetail', params: {id: r.data.id}})
               })
               .catch(e => {
                 this.$Notice.error({ title: '上传失败' })

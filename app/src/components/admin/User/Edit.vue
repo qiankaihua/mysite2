@@ -118,6 +118,7 @@
     name: 'AdminEdit',
     data () {
       return {
+        that: null,
         hasOldAvatar: null,
         avatar: null,
         oldAvatar: null,
@@ -177,6 +178,7 @@
         })
       this.status = this.$store.state.auth.status
       this.token = this.$store.state.auth.token
+      this.that = this
     },
     methods: {
       Change: (that) => {

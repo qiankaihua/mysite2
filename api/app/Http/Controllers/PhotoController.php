@@ -72,7 +72,7 @@ class PhotoController extends Controller
         $this->validate($request, [
             'photo' => 'required|image',
             'name' => 'nullable|string|max:30',
-            'album_id' => 'nullable|integer|min:1',
+            'album_id' => 'nullable|integer|min:0',
         ]);
         $user = $request->input('now_user', null);
         if($user === null) abort(401);
