@@ -6,6 +6,9 @@
 
 <script>
   export default {
+    created: function () {
+//      this.$router.push({name: 'BlogList'})
+    },
     name: '',
     data: () => ({}),
     computed: {},

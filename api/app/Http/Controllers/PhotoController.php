@@ -17,7 +17,7 @@ class PhotoController extends Controller
     public function Show(Request $request) {
         $this->validate($request, [
             'user_id' => 'nullable|integer|min:1',
-            'Album_id' => 'nullable|integer|min:1',
+            'album_id' => 'nullable|integer|min:0',
             'limit' => 'nullable|integer|min:1',
             'offset' => 'nullable|integer|min:0',
             'type' => 'nullable|string|in:random,list',
@@ -52,7 +52,11 @@ class PhotoController extends Controller
                     'nickname' => $user->nickname,
                     'avatar' => $avatar,
                 ],
-                'album' => [
+                'album' => $album === null ? [
+                    'id' => 0,
+                    'title' => '默认分类',
+                    'intro' => '',
+                ] : [
                     'id' => $album->id,
                     'title' => $album->title,
                     'intro' => $album->intro,
@@ -89,7 +93,7 @@ class PhotoController extends Controller
     public function Change(Request $request, $photo_id) {
         $this->validate($request, [
             'name' => 'nullable|string|max:30',
-            'album_id' => 'nullable|integer|min:1',
+            'album_id' => 'nullable|integer|min:0',
         ]);
         $now_user = $request->input('now_user', null);
         if($now_user === null) abort(401);
@@ -98,6 +102,7 @@ class PhotoController extends Controller
         if($photo->user_id !== $now_user->id && $now_user->id !== 1) abort(403);
         if($request->input('name', null) !== null) $photo->name = clean($request->input('name'));
         if($request->input('album_id', null) !== null) $photo->album_id = $request->input('album_id');
+        $photo->save();
         return response([
             'id' => $photo->id,
         ]);

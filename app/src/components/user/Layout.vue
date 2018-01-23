@@ -3,7 +3,7 @@
     <div class="container">
       <i-row type="flex" class="sidebar" :class="{'layout-hide-text': Hide === true}">
         <i-col :xs="SpanLeftXS" :sm="SpanLeftSM" :md="SpanLeftMD" :lg="SpanLeftLG" class="layout-menu-left">
-          <i-menu active-name="2" theme="dark" width="auto" :open-names="['1']" @on-select="$router.push({ name: $event })">
+          <i-menu active-name="Home" theme="dark" width="auto" @on-select="$router.push({ name: $event })">
             <div class="layout-header">
               <i-avatar v-if="avatar" :src="avatar" size="default" />
               <i-avatar v-else icon="person" size="default" />
@@ -11,11 +11,13 @@
                 <i-icon type="navicon" color="white" size="32"></i-icon>
               </i-button>
             </div>
+            <i-menu-item name="Home" style="display: none">
+            </i-menu-item>
             <i-menu-item name="1">
               <i-icon type="folder" :size="iconSize"></i-icon>
               <span class="layout-text">Categories</span>
             </i-menu-item>
-            <i-menu-item name="2">
+            <i-menu-item name="BlogList">
               <i-icon type="document-text" :size="iconSize"></i-icon>
               <span class="layout-text">Blogs</span>
             </i-menu-item>
@@ -51,7 +53,8 @@
         </i-col>
       </i-row>
     </div>
-    <i-back-top :height="20" :bottom="50"></i-back-top>
+    <i-back-top :height="20" :bottom="100"></i-back-top>
+    <div class="bug" @click="Test">反馈bug</div>
   </div>
 </template>
 
@@ -126,6 +129,10 @@
         this.SpanLeftSM = this.SpanLeftSM === 5 ? 2 : 5
         this.SpanLeftMD = this.SpanLeftMD === 5 ? 2 : 5
         this.SpanLeftLG = this.SpanLeftLG === 4 ? 2 : 4
+      },
+      Test () {
+        event.preventDefault()
+        console.log('tttt')
       }
     }
   }
@@ -186,5 +193,18 @@
   .child-container {
     word-wrap: break-word;
     text-align: left;
+  }
+  .bug {
+    z-index: 9999999;
+    position: fixed;
+    right: 30px;
+    bottom: 25px;
+    padding: 10px;
+    background: rgba(0, 153, 229, .7);
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    cursor: pointer;
+    width: 100px;
   }
 </style>

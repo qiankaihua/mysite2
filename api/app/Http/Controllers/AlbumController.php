@@ -28,7 +28,7 @@ class AlbumController extends Controller
         $albums = $album_build->get();
         $count = $user->photos()->count();
         $nocate = \App\Models\Photo::where('user_id', '=', $request->input('user_id'))->where('album_id', '=', '0')->get();
-        $nocate_photo = \App\Models\Photo::where('user_id', '=', $request->input('user_id'))->where('album_id', '=', '0')->latest('updated_at')->take(5)->get();
+        $nocate_photo = \App\Models\Photo::where('user_id', '=', $request->input('user_id'))->where('album_id', '=', '0')->latest('updated_at')->get();
         $nocate = count($nocate);
         $nocate_photos = [];
         foreach ($nocate_photo as $p) {
@@ -50,7 +50,7 @@ class AlbumController extends Controller
         ];
         foreach ($albums as $key => $album) {
             $album->total = $album->photos()->count();
-            $photos = $album->photos()->latest('updated_at')->take(5)->get();
+            $photos = $album->photos()->latest('updated_at')->get();
             $photo = [];
             foreach ($photos as $p) {
                 array_push($photo, [
@@ -65,31 +65,74 @@ class AlbumController extends Controller
                 'title' => $album->title,
                 'intro' => $album->intro,
                 'photo' => $photo,
-                'created_at' => $album->created_at,
+                'intro' => $album->intro,
+                'created_at' => $album->created_at === null ? null : $album->created_at->timestamp,
             ];
         }
         return response($response)->header('X-total', $max);
     }
     public function ShowDetail(Request $request, $album_id) {
-        $album = \App\Models\Album::find($album_id);
-        if($album === null) abort(404);
-        $user = $album->user()->first();
-        $avatar = null;
-        if(isset($user->avatar)) {
-            $avatar = str_replace("public/", "", $user->avatar);
-            $avatar = str_replace(".", '_', $avatar);
+        $this->validate($request, [
+            'user_id' => 'nullable|integer|min:1',
+            'limit' => 'nullable|integer|min:1',
+            'offset' => 'nullable|integer|min:0',
+        ]);
+        if (+$album_id !== 0) {
+            $album = \App\Models\Album::find($album_id);
+            if ($album === null) abort(404);
+            $created_at = $album->created_at->timestamp;
+            $title = $album->title;
+            $intro = $album->intro;
+            $user = $album->user()->first();
+            $avatar = null;
+            if (isset($user->avatar)) {
+                $avatar = str_replace("public/", "", $user->avatar);
+                $avatar = str_replace(".", '_', $avatar);
+            }
+            $photos = $album->photos();
+        } else {
+            $title = '默认相册';
+            $intro = '';
+            $created_at = 0;
+            $user_id = $request->input('user_id', null);
+            if ($user_id === null) abort(422);
+            $user = \App\Models\User::find($user_id);
+            $avatar = null;
+            if (isset($user->avatar)) {
+                $avatar = str_replace("public/", "", $user->avatar);
+                $avatar = str_replace(".", '_', $avatar);
+            }
+            $photos = \App\Models\Photo::where('user_id', '=', $user_id)->where('album_id', '=', 0)->latest('updated_at');
         }
-        return response([
-            'id' => $album->id,
+        $max = count($photos->get());
+        $photos = $photos->offset($request->input('offset', 0));
+        $photos = $photos->take($request->input('limit', $max))->get();
+        $response = [
+            'id' => $album_id,
             'user' => [
                 'id' => $user->id,
                 'avatar' => $avatar,
                 'nickname' => $user->nickname,
             ],
-            'title' => $album->title,
-            'intro' => $album->intro,
-            'created_at' => $album->created_at->timestamp,
-        ]);
+            'title' => $title,
+            'intro' => $intro,
+            'created_at' => $created_at,
+            'photo' => [],
+        ];
+        foreach ($photos as $photo) {
+            $url = null;
+            if(isset($photo->url)) {
+                $url = str_replace("public/", "", $photo->url);
+                $url = str_replace(".", '_', $url);
+            }
+            $response['photo'][] = [
+                'id' => $photo->id,
+                'path' => $url,
+                'name' => $photo->name,
+                'updated_at' => $photo->updated_at->timestamp,
+            ];
+        }
+        return response($response)->header('X-total', $max);
     }
     public function Store(Request $request) {
         $this->validate($request, [
@@ -98,9 +141,9 @@ class AlbumController extends Controller
         ]);
         $user = $request->input('now_user', null);
         if($user === null) abort(401);
-        $album = \App\Models\Album;
-        $album->title = clean($request->input('title'));
-        $album->intro = clean($request->input('intro'));
+        $album = new \App\Models\Album;
+        $album->title = $request->input('title');
+        $album->intro = $request->input('intro');
         $user->albums()->save($album);
         return response([
             'success',
@@ -116,8 +159,10 @@ class AlbumController extends Controller
         $album = \App\Models\Album::find($album_id);
         if($album === null) abort(404);
         if($album->user_id !== $user->id && $user->id !== 1) abort(403);
-        if($request->input('title', null) !== null) $album->title = clean($request->input('title'));
-        if($request->input('intro', null) !== null) $album->intro = clean($request->input('intro'));
+        $temp = \App\Models\Album::where('id', '!=', $album_id)->where('user_id', '=', $user->id)->where('title', '=', $request->input('title'))->get();
+        if (count($temp) > 0) abort(444);
+        if($request->input('title', null) !== null) $album->title = $request->input('title');
+        if($request->input('intro', null) !== null) $album->intro = $request->input('intro');
         $album->save();
         return response([
             'success',
@@ -129,6 +174,11 @@ class AlbumController extends Controller
         $album = \App\Models\Album::find($album_id);
         if($album === null) abort(404);
         if($album->user_id !== $user->id && $user->id !== 1) abort(403);
+        $photos = $album->photos;
+        foreach ($photos as $photo) {
+            $photo->album_id = 0;
+            $photo->save();
+        }
         $album->delete();
         return response([
             'success',

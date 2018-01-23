@@ -2,10 +2,10 @@
   <div class="Index">
     <i-row>
       <i-col :xs="{span: 5, offset: 13}" :sm="{span: 2, offset: 19}" :md="{span: 2, offset: 20}" :lg="{span: 2, offset: 20}">
-        <i-button type="primary" class="width:100%" @click="ToLogin()">Login</i-button>
+        <i-button type="primary" size="large" class="width:100%" @click="ToLogin()">Login</i-button>
       </i-col>
       <i-col :xs="{span: 6}" :sm="{span: 3}" :md="{span: 2}" :lg="{span: 2}">
-        <i-button type="primary" class="width:100%" @click="ToRegister()">Register</i-button>
+        <i-button type="primary" size="large" class="width:100%" @click="ToRegister()">Register</i-button>
       </i-col>
     </i-row>
     <i-row class="main-head">
@@ -13,7 +13,7 @@
     </i-row>
     <i-row>
       <i-col class="home" span="24">
-        <i-button class="home" type="info" @click="ToHome">Click Me To Go Home</i-button>
+        <i-button class="home" size="large" type="info" @click="ToHome">Click Me To Go Home</i-button>
       </i-col>
     </i-row>
   </div>

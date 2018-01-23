@@ -35,7 +35,8 @@
         </i-col>
       </i-row>
     </div>
-    <i-back-top :height="20" :bottom="50"></i-back-top>
+    <i-back-top :height="20" :bottom="100"></i-back-top>
+    <div class="bug" @click="Test">反馈bug</div>
   </div>
 </template>
 
@@ -78,7 +79,6 @@
             title: '照片相关',
             items: [
               {to: {name: 'AdminAlbumList'}, title: '查看相册', show: true},
-              {to: {name: ''}, title: '新建相册', show: true},
               {to: {name: 'AddPhoto'}, title: '上传图像', show: true}
             ]
           }
@@ -137,6 +137,10 @@
         this.$store.commit('SET_AUTH_USER', {})
         this.$store.commit('SET_STATUS', false)
         this.$router.push('/login')
+      },
+      Test () {
+        event.preventDefault()
+        console.log('tttt')
       }
     }
   }
@@ -187,5 +191,18 @@
   }
   .Nickname {
     font-size: large;
+  }
+  .bug {
+    z-index: 9999999;
+    position: fixed;
+    right: 30px;
+    bottom: 25px;
+    padding: 10px;
+    background: rgba(0, 153, 229, .7);
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    cursor: pointer;
+    width: 100px;
   }
 </style>

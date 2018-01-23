@@ -13,7 +13,7 @@
         <i-row>
           <i-col :span="12" v-if="isAdmin">
             <i-select v-model="user_id" class="select-user" @on-change="ChangeUser">
-              <i-option v-for="item in users" :value="item.user_id" :key="item.user_id" :label="item.nickname">
+              <i-option v-for="item in users" :value="item.user_id" :key="item.user_id" :label="item.nickname" :disabled="item.disable">
                 <span>{{ item.nickname }}</span>
                 <span class="category-sum">{{ item.category_sum }}</span>
               </i-option>
@@ -142,8 +142,9 @@
         users: [
           {
             user_id: 0,
-            category_sum: 0,
-            nickname: '选择用户'
+            category_sum: null,
+            nickname: '选择用户',
+            disable: true
           }
         ],
         user_id: 1,
@@ -265,7 +266,8 @@
               this.users.push({
                 nickname: user.nickname,
                 category_sum: user.category,
-                user_id: user.id
+                user_id: user.id,
+                disable: false
               })
             }
           })

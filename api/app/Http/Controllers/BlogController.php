@@ -58,7 +58,7 @@ class BlogController extends Controller
     }
     public function Change(Request $request, $blog_id) {
         $this->validate($request, [
-            'category_id' => 'nullable|integer',
+            'category_id' => 'nullable|integer|min:0',
             'title' => 'nullable|string|min:1|max:100',
             'contents' => 'nullable|string|min:1',
         ]);

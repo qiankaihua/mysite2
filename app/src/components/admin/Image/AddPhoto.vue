@@ -42,6 +42,12 @@
         <img :src="item.data" :key="idx"><br>
         <i-input v-model="item.name" placeholder="Enter Photo Name...">
         </i-input>
+        <i-select v-model="item.album_id" class="select-album" :disabled="disable">
+          <i-option v-for="its in Album" :value="its.id" :key="its.id" :label="its.title">
+            <span>{{ its.title }}</span>
+            <span class="sum-photo-per-album">{{ its.total }}</span>
+          </i-option>
+        </i-select>
       </div>
     </div>
   </div>
@@ -51,15 +57,49 @@
 <script>
   import cf from '../../../../.config.js'
   export default {
+    components: {
+    },
     name: 'AddPhoto',
     data () {
       return {
-        image: []
+        image: [],
+        Album: [],
+        disable: true
       }
     },
     computed: {
     },
+    beforeMount () {
+      this.getAlbum()
+    },
     methods: {
+      getAlbum: function () {
+        let params = {
+          user_id: this.$store.state.auth.authUser.id,
+          token: this.$store.state.auth.token
+        }
+        this.$http.get('show/album/list', {params})
+          .then(res => {
+            this.Album = []
+            this.Album.push({
+              id: 0,
+              title: '默认分组',
+              total: res.data.nocate
+            })
+            let Albums = res.data.album
+            for (let album of Albums) {
+              this.Album.push({
+                id: album.id,
+                title: album.title,
+                total: album.total
+              })
+            }
+            if (this.Album.length > 1) this.disable = false
+          })
+          .catch(e => {
+            console.log(e)
+          })
+      },
       imgPreview (file) {
         let self = this
         // 看支持不支持FileReader
@@ -73,6 +113,7 @@
           reader.onloadend = function () {
             self.image.push({
               status: false, // 未上传
+              album_id: 0,
               photo: file,
               data: this.result,
               name: file['name'].replace(/^(.+?)(\.[^.\\]*?)?$/gi, '$1')
@@ -87,25 +128,7 @@
       UploadAll: function () {
         for (let i = 0; i < this.image.length; i += 1) {
           if (this.image[i].status === true) continue
-          let formData = new FormData()
-          formData.append('photo', this.image[i].photo)
-          let config = {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              'token': this.$store.state.auth.token
-            }
-          }
-          this.$http.post('photo/add', formData, config)
-            .then(r => {
-              this.image[i].status = true
-              this.$Message.success('上传成功')
-              this.image[i].url = r.data.path
-              this.image[i].photoId = r.data.id
-            })
-            .catch(e => {
-              this.$Message.error('上传失败')
-              console.log(e)
-            })
+          this.UploadPhoto(i)
         }
       },
       UploadPhoto: function (id) {
@@ -113,6 +136,7 @@
         let formData = new FormData()
         formData.append('photo', this.image[id].photo)
         formData.append('name', this.image[id].name)
+        formData.append('album_id', this.image[id].album_id)
         let config = {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -131,7 +155,7 @@
             console.log(e)
           })
       },
-      DownloadPhoto (id) {
+      DownloadPhoto: function (id) {
         window.open(cf.api.host + '/show/img/' + this.image[id].url) // 改ip
       },
       DeletePhoto: function (id) {
@@ -149,6 +173,8 @@
               console.log(e)
             })
         }
+      },
+      ChangeAlbum: function () {
       }
     }
   }
@@ -240,5 +266,11 @@
   }
   .for-style {
     height: 150px;
+  }
+  .select-album {
+  }
+  .sum-photo-per-album {
+    float: right;
+    color: #cccccc;
   }
 </style>

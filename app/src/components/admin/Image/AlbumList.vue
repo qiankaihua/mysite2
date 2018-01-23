@@ -3,7 +3,7 @@
     <div class="layout-breadcrumb">
       <i-breadcrumb>
         <i-breadcrumb-item href="/admin/info">Home</i-breadcrumb-item>
-        <i-breadcrumb-item>Image</i-breadcrumb-item>
+        <i-breadcrumb-item href="/admin/albums/list">Image</i-breadcrumb-item>
         <i-breadcrumb-item>AlbumList</i-breadcrumb-item>
       </i-breadcrumb>
     </div>
@@ -12,7 +12,7 @@
         <div class="title">相册管理</div>
         <i-row>
           <i-col :span="12" v-if="isAdmin">
-            <i-select v-model="user_id" class="select-user" @on-change="ChangeUser">
+            <i-select v-model="user_id" class="select-user" @on-change="ChangeAlbum">
               <i-option v-for="item in users" :value="item.user_id" :key="item.user_id" :label="item.nickname">
                 <span>{{ item.nickname }}</span>
                 <span class="album-sum">{{ item.album_sum }}</span>
@@ -26,11 +26,13 @@
                 <span>添加相册</span>
               </p>
               <div style="text-align:center">
-                <span style="margin-right: 20px;">标题</span>
+                <div style="text-align: left; margin-left: 15%">标题</div>
                 <i-input v-model="newTitle" placeholder="输入相册标题" style="width: 70%"></i-input>
+                <div style="text-align: left; margin-left: 15%; margin-top: 20px">简介</div>
+                <i-input v-model="newIntro" placeholder="相册简介......" type="textarea" :autosize="{minRows: 2, maxRows: 10}" class="intro"></i-input>
               </div>
               <div slot="footer">
-                <i-button @click="AddCategory" type="primary" class="add-button">确定添加</i-button>
+                <i-button @click="AddAlbum" type="primary" class="add-button">确定添加</i-button>
               </div>
             </i-modal>
           </i-col>
@@ -40,33 +42,46 @@
                 <span>修改相册</span>
               </p>
               <div style="text-align:center">
-                <span style="margin-right: 20px;">标题</span>
-                <i-input v-model="editTitle" placeholder="请选择分类" style="width: 70%"></i-input>
+                <div style="text-align: left; margin-left: 15%">标题</div>
+                <i-input v-model="editTitle" placeholder="输入相册标题" style="width: 70%"></i-input>
+                <div style="text-align: left; margin-left: 15%; margin-top: 20px">简介</div>
+                <i-input v-model="editIntro" placeholder="相册简介......" type="textarea" :autosize="{minRows: 2, maxRows: 10}" class="intro"></i-input>
               </div>
               <div slot="footer">
-                <i-button @click="EditCategory" type="warning" class="add-button">确定修改</i-button>
+                <i-button @click="EditAlbum" type="warning" class="add-button">确定修改</i-button>
               </div>
             </i-modal>
           </i-col>
-          <!--<i-col>-->
-            <!--<i-modal v-model="modal3">-->
-              <!--<p slot="header">-->
-                <!--<span>移动图片</span>-->
-              <!--</p>-->
-              <!--<div style="text-align:center">-->
-                <!--<span style="margin-right: 20px;">选择分类：</span>-->
-                <!--<i-select v-model="moveToCategory" class="select-category" :disabled="disable">-->
-                  <!--<i-option v-for="item in CategoryChange" :value="item.value" :key="item.value" :label="item.label">-->
-                    <!--<span>{{ item.label }}</span>-->
-                    <!--<span class="sum-blog-per-cate">{{ item.total }}</span>-->
-                  <!--</i-option>-->
-                <!--</i-select>-->
-              <!--</div>-->
-              <!--<div slot="footer">-->
+          <i-col>
+            <i-modal v-model="modal3" width="80%">
+              <p slot="header" style="height: 36px;">
+                <i-input v-model="editPhotoName" style="width: 200px;"></i-input>
+                <!--<span>{{bigPhoto.name}}</span>-->
+                <i-button type="warning" class="change-photo" @click="EditPhotoAlbum(bigPhoto.id)">修改图片</i-button>
+                <i-select
+                v-model="moveToAlbum"
+                class="select-edit-album">
+                  <i-option v-for="item in Album" :value="item.id" :key="item.id" :label="item.title">
+                    <span>{{ item.title }}</span>
+                    <span class="album-sum">{{ item.total }}</span>
+                  </i-option>
+                </i-select>
+
+              </p>
+              <div style="text-align: center">
+                <img :src="bigPhoto.path" class="big-photo">
+                <div class="change-image">
+                  <a v-show="bigPhoto.pre" class="pre-image" @click="BigPhotoBefore(bigPhoto.photo_id, bigPhoto.album_id)"></a>
+                  <a v-show="bigPhoto.nxt" class="nxt-image" @click="BigPhotoAfter(bigPhoto.photo_id, bigPhoto.album_id)"></a>
+                </div>
+              </div>
+              <div slot="footer">
+                <span class="index">{{bigPhoto.photo_id + 1}} of {{Album[bigPhoto.album_id].total}}</span>
+                <span class="album-name">所属分组：{{Album[bigPhoto.album_id].title}}</span>
                 <!--<i-button @click="EditBlogCategory" type="warning" class="add-button">确定修改</i-button>-->
-              <!--</div>-->
-            <!--</i-modal>-->
-          <!--</i-col>-->
+              </div>
+            </i-modal>
+          </i-col>
         </i-row>
         <i-row>
           <i-col :span="24" align="right">
@@ -92,14 +107,9 @@
                 <i-button v-if="album.id" @click="ShowEditAlbum(album.id)" type="primary" class="album-button">修改</i-button>
                 <i-button v-if="album.id" @click="DeleteAlbum(album.id)" type="error" class="album-button">删除</i-button>
               </p>
-              <ul class="album-ul">
-                <li v-for="photo in album.photo" class="album-li">
-                  图片
-                  <!--<a @click="ToPhoneDetail(blog.id)">{{ blog['title'] }}</a>-->
-                  <!--<i-button type="primary" shape="circle" size="small" class="edit-blog" @click="ShowModal3(blog.id)">移至</i-button>-->
-                  <hr>
-                </li>
-              </ul>
+              <div v-if="album.photo">
+                <img v-for="(photo, idx2) in album.photo.slice(0, 5)" :src="photo.path" class="photo" @click="BigPhoto(photo, idx, idx2)">
+              </div>
               <p class="create-date" v-if="album.created_at">创建于{{album.created_at}}</p>
               <i-button v-if="album.total > 5" class="more-photo" @click="ShowAlbumDetail(album.id)">查看更多</i-button>
             </i-card>
@@ -123,6 +133,7 @@
 <script>
   import store from 'store'
   import moment from 'moment'
+  import axios from 'axios'
   export default {
     components: {
     },
@@ -135,20 +146,37 @@
         modal3: false,
         disable: true,
         newTitle: '',
+        newIntro: '',
         editTitle: '',
+        editIntro: '',
         AlbumChange: [],
         moveToAlbum: 0,
-        movedBlog: 0,
+        editPhotoName: '',
+        movedPhoto: 0,
         editId: 0,
+        bigPhoto: {
+          id: '',
+          album_id: 0,
+          photo_id: '',
+          path: '',
+          name: '',
+          total: ''
+        },
         users: [
           {
             user_id: 0,
-            album_sum: 0,
+            album_sum: '',
             nickname: '选择用户'
           }
         ],
         user_id: 1,
-        Album: [],
+        Album: [
+          {
+            id: 0,
+            total: 0,
+            title: ''
+          }
+        ],
         Pagination: {
           Total: 0,
           Current: 1,
@@ -160,7 +188,9 @@
       let auth = this.$store.state.auth.authUser
       if (auth.id === 1) {
         this.isAdmin = true
-        this.user_id = localStorage.userCategory === undefined ? auth.id : JSON.parse(localStorage.userCategory)
+        this.user_id = (localStorage.userAlbum === undefined || localStorage.userAlbum === '') ? auth.id : JSON.parse(localStorage.userAlbum)
+        if (this.user_id === '') this.user_id = auth.id
+        console.log(this.user_id)
       } else {
         this.isAdmin = false
         this.user_id = auth.id
@@ -196,18 +226,35 @@
               id: 0,
               title: '默认分组',
               total: res.data.nocate,
+              intro: '',
               created_at: '',
-              blog: res.data.nocate_blog
+              photo: []
             })
+            for (let photo of res.data.nocate_photo) {
+              this.Album[0].photo.push({
+                id: photo.id,
+                path: axios.defaults.baseURL + 'show/img/' + photo.path,
+                name: photo.name
+              })
+            }
             this.Pagination.Total = +res.headers['x-total']
-            let Cates = res.data.category
-            for (let cate of Cates) {
-              this.Category.push({
-                id: cate.id,
-                title: cate.title,
-                total: cate.total,
-                blog: cate.blog,
-                created_at: moment.unix(cate.created_at).format('YYYY-MM-DD HH:mm:ss')
+            let Albums = res.data.album
+            for (let album of Albums) {
+              let temp = []
+              for (let photo of album.photo) {
+                temp.push({
+                  id: photo.id,
+                  path: axios.defaults.baseURL + 'show/img/' + photo.path,
+                  name: photo.name
+                })
+              }
+              this.Album.push({
+                id: album.id,
+                title: album.title,
+                total: album.total,
+                photo: temp,
+                intro: album.intro,
+                created_at: moment.unix(album.created_at).format('YYYY-MM-DD HH:mm:ss')
               })
             }
           })
@@ -215,7 +262,7 @@
             console.log(e)
           })
       },
-      AddCategory: function () {
+      AddAlbum: function () {
         let config = {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -224,12 +271,15 @@
         }
         let formData = new FormData()
         formData.append('title', this.newTitle)
-        this.$http.post('/category/add', formData, config)
+        if (this.newIntro === '') this.newIntro = '该用户很懒，没有留下简介'
+        formData.append('intro', this.newIntro)
+        this.$http.post('/album/add', formData, config)
           .then(r => {
             this.$Notice.success({title: '添加成功'})
             this.newTitle = ''
+            this.newIntro = ''
             this.modal = false
-            this.GetCategory()
+            this.GetAlbum()
           })
           .catch(e => {
             switch (e.response.status) {
@@ -241,7 +291,7 @@
                 this.$Notice.error({title: '没有权限'})
                 break
               case 422:
-                this.$Notice.error({title: '标题不能为空且不能过长'})
+                this.$Notice.error({title: '标题不能为空'})
                 break
               case 444:
                 this.$Notice.error({title: '不允许重复标题'})
@@ -265,7 +315,7 @@
             for (let user of Users) {
               this.users.push({
                 nickname: user.nickname,
-                category_sum: user.category,
+                album_sum: user.album,
                 user_id: user.id
               })
             }
@@ -274,26 +324,31 @@
             console.log(e)
           })
       },
-      ChangeUser: function () {
-        store.set('userCategory', this.user_id)
-        this.GetCategory()
+      ChangeAlbum: function () {
+        store.set('userAlbum', this.user_id)
+        this.GetAlbum()
       },
-      ShowEditCategory: function (id) {
+      ShowEditAlbum: function (id) {
         this.editId = id
         this.modal2 = !this.modal2
-        for (let ca of this.Category) {
-          if (ca.id === id) this.editTitle = ca.title
+        for (let al of this.Album) {
+          if (al.id === id) {
+            this.editTitle = al.title
+            this.editIntro = al.intro
+          }
         }
       },
-      EditCategory: function () {
+      EditAlbum: function () {
+        if (this.editIntro === '') this.editIntro = '该用户很懒，没有留下简介'
         let data = {
           'token': this.$store.state.auth.token,
-          'title': this.editTitle
+          'title': this.editTitle,
+          'intro': this.editIntro
         }
-        this.$http.put('category/' + this.editId, data)
+        this.$http.put('album/' + this.editId, data)
           .then(r => {
             this.$Notice.success({title: '修改成功'})
-            this.GetCategory()
+            this.GetAlbum()
             this.modal2 = false
           })
           .catch(e => {
@@ -309,7 +364,7 @@
                 this.$Notice.error({title: '不存在的分组'})
                 break
               case 422:
-                this.$Notice.error({title: '标题不能为空且不能过长'})
+                this.$Notice.error({title: '标题不能为空'})
                 break
               case 444:
                 this.$Notice.error({title: '重复标题'})
@@ -319,12 +374,11 @@
             }
           })
       },
-      DeleteCategory: function (id) {
-        console.log(id)
-        this.$http.delete('category/' + id, {params: {token: this.$store.state.auth.token}})
+      DeleteAlbum: function (id) {
+        this.$http.delete('album/' + id, {params: {token: this.$store.state.auth.token}})
           .then(r => {
             this.$Notice.success({title: '删除成功'})
-            this.GetCategory()
+            this.GetAlbum()
           })
           .catch(e => {
             switch (e.response.status) {
@@ -343,63 +397,86 @@
             }
           })
       },
-      ShowCategoryDetail: function (id) {
-        store.set('blogCategory', id)
-        setTimeout(this.$router.push({name: 'AdminShowBlog'}), 233)
+      ShowAlbumDetail: function (id) {
+        store.set('userAlbum', this.user_id)
+        this.$router.push({name: 'AdminAlbumDetail', params: {id: id}})
       },
-      ToBlogDetail: function (id) {
-        this.$router.push({name: 'AdminShowBlogDetail', params: {id: id}})
-      },
-      ShowModal3: function (blogId) {
-        let params = {
-          user_id: this.user_id,
-          token: this.$store.state.auth.token
-        }
-        this.$http.get('show/category/list', {params})
-          .then(res => {
-            this.CategoryChange = []
-            this.CategoryChange.push({
-              value: 0,
-              label: '默认分组',
-              total: res.data.nocate
-            })
-            let Cates = res.data.category
-            for (let cate of Cates) {
-              this.CategoryChange.push({
-                value: cate.id,
-                label: cate.title,
-                total: cate.total
-              })
-            }
-            if (this.CategoryChange.length === 1) this.disable = true
-            else this.disable = false
+      EditPhotoAlbum: function (id) {
+        let data = {}
+        data.name = this.editPhotoName
+        data.album_id = this.moveToAlbum
+        data.token = this.$store.state.auth.token
+        this.$http.put('photo/' + id, data)
+          .then(r => {
+            this.$Notice.success({title: '修改成功'})
+            this.GetAlbum()
+            this.modal3 = false
+            this.moveToAlbum = 0
           })
           .catch(e => {
+            this.$Notice.error({title: '修改失败'})
             console.log(e)
           })
-        this.modal3 = true
-        this.movedBlog = blogId
       },
-      EditBlogCategory: function () {
-        let data = {}
-        data.category_id = this.moveToCategory
-        data.token = this.$store.state.auth.token
-        this.$http.put('blog/' + this.movedBlog + '/change', data)
-          .then(r => {
-            this.$Notice.success({ title: '修改成功' })
-            this.GetCategory()
-            this.modal3 = false
-            this.moveToCategory = 0
-          })
-          .catch(e => {
-            this.$Notice.error({ title: '修改失败' })
-          })
+      BigPhoto: function (photo, albumId, photoId) {
+        this.modal3 = !this.modal3
+        let hasPre = true
+        if (photoId === 0) hasPre = false
+        let hasNxt = true
+        if (photoId === this.Album[albumId].photo.length - 1) hasNxt = false
+        this.bigPhoto = {
+          id: photo.id,
+          photo_id: photoId,
+          album_id: albumId,
+          path: photo.path,
+          name: photo.name,
+          pre: hasPre,
+          nxt: hasNxt
+        }
+        this.editPhotoName = this.bigPhoto.name
+        this.moveToAlbum = this.bigPhoto.album_id
+      },
+      BigPhotoBefore: function (photoId, albumId) {
+        photoId -= 1
+        let hasPre = true
+        if (photoId === 0) hasPre = false
+        let hasNxt = true
+        if (photoId === this.Album[albumId].photo.length - 1) hasNxt = false
+        let photo = this.Album[albumId].photo[photoId]
+        this.bigPhoto = {
+          id: photo.id,
+          photo_id: photoId,
+          album_id: albumId,
+          path: photo.path,
+          name: photo.name,
+          pre: hasPre,
+          nxt: hasNxt
+        }
+        this.editPhotoName = this.bigPhoto.name
+      },
+      BigPhotoAfter: function (photoId, albumId) {
+        photoId += 1
+        let hasPre = true
+        if (photoId === 0) hasPre = false
+        let hasNxt = true
+        if (photoId === this.Album[albumId].photo.length - 1) hasNxt = false
+        let photo = this.Album[albumId].photo[photoId]
+        this.bigPhoto = {
+          id: photo.id,
+          photo_id: photoId,
+          album_id: albumId,
+          path: photo.path,
+          name: photo.name,
+          pre: hasPre,
+          nxt: hasNxt
+        }
+        this.editPhotoName = this.bigPhoto.name
       }
     }
   }
 </script>
 
-<style scoped>
+<style scoped lang="less">
   .AlbumList {
   }
   .layout-breadcrumb{
@@ -476,5 +553,89 @@
   }
   .create-date {
     margin-top: 20px;
+  }
+  .intro {
+    width: 70%;
+  }
+  .photo {
+    margin-left: 5px;
+    max-height: 100px;
+    max-width: 100%;
+    cursor: pointer;
+  }
+  .big-photo {
+    /*max-width: 100%;*/
+    /*max-height: none;*/
+    display: block;
+    height: auto;
+    max-width: 100%;
+    max-height: none;
+    border-radius: 3px;
+    /* Image border */
+    border: 4px solid white;
+
+    margin-left: auto;
+    margin-right: auto
+  }
+  .index {
+    float: left;
+    color: #cccccc;
+  }
+  .change-image {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 10;
+    a {
+      outline: none;
+      background-image: url('data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==');
+    }
+  }
+  .pre-image, .nxt-image {
+    height: 100%;
+    cursor: pointer;
+    display: block;
+    z-index: 20;
+  }
+  .pre-image {
+    background: url('../../../../static/pre.png') left 5% top 45% no-repeat !important;
+    width: 34%;
+    left: 0;
+    float: left;
+    opacity: 0;
+    transition: opacity 0.6s;
+    -webkit-transition: opacity 0.6s;
+    -moz-transition: opacity 0.6s;
+    -o-transition: opacity 0.6s;
+    &:hover {
+      opacity: 1;
+    }
+  }
+  .nxt-image {
+    background: url('../../../../static/next.png') right 5% top 45% no-repeat !important;
+    width: 64%;
+    right: 0;
+    float: right;
+    opacity: 0;
+    transition: opacity 0.6s;
+    -webkit-transition: opacity 0.6s;
+    -moz-transition: opacity 0.6s;
+    -o-transition: opacity 0.6s;
+    &:hover {
+      opacity: 1;
+    }
+  }
+  .album-name {
+  }
+  .select-edit-album {
+    width: 200px;
+    float: right;
+    margin-right: 50px;
+  }
+  .change-photo {
+    float: right;
+    margin-right: 50px;
   }
 </style>

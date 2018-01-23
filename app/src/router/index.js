@@ -25,6 +25,11 @@ export default new VueRouter({
           path: 'user/:id',
           name: 'UserDetail',
           component: r => require(['../components/user/User/ShowDetail.vue'], r)
+        },
+        {
+          path: 'blog',
+          name: 'BlogList',
+          component: r => require(['../components/user/Blog/blogList.vue'], r)
         }
       ]
     },
@@ -87,6 +92,11 @@ export default new VueRouter({
           path: 'albums/list',
           name: 'AdminAlbumList',
           component: r => require(['../components/admin/Image/AlbumList.vue'], r)
+        },
+        {
+          path: 'albums/:id',
+          name: 'AdminAlbumDetail',
+          component: r => require(['../components/admin/Image/AlbumDetail.vue'], r)
         },
         {
           path: 'photo/add',

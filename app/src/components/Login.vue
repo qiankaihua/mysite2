@@ -105,7 +105,7 @@
       this.$http.get('check', {params: {token: this.$store.state.auth.token}})
         .then((response) => {
           this.$Notice.success({title: '登陆成功'})
-          this.$router.push({ path: '/home' })
+          this.$router.push({ name: 'Home' })
           this.$Loading.finish()
         })
         .catch((e) => {
