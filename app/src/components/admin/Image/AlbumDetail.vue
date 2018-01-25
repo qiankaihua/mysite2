@@ -22,7 +22,8 @@
           <i-col>
             <i-modal v-model="modal3" width="80%">
               <p slot="header" style="height: 36px;">
-                <i-input v-model="editPhotoName" style="width: 200px;"></i-input>
+                <i-input v-model="editPhotoName" style="width: 180px;"></i-input>
+                <i-button type="error" class="change-photo" @click="DeletePhotoAlbum(bigPhoto.id)">删除图片</i-button>
                 <i-button type="warning" class="change-photo" @click="EditPhotoAlbum(bigPhoto.id)">修改图片</i-button>
                 <i-select
                   v-model="moveToAlbum"
@@ -263,6 +264,18 @@
         }
         this.editPhotoName = this.bigPhoto.name
       },
+      DeletePhotoAlbum: function (id) {
+        this.$http.delete('photo/' + id, {params: {token: this.$store.state.auth.token}})
+          .then(r => {
+            this.$Notice.success({title: '删除成功'})
+            this.GetPhoto()
+            this.modal3 = false
+          })
+          .catch(e => {
+            this.$Notice.error({title: '删除失败'})
+            console.log(e)
+          })
+      },
       EditPhotoAlbum: function (id) {
         let data = {}
         data.name = this.editPhotoName
@@ -391,13 +404,13 @@
   .album-name {
   }
   .select-edit-album {
-    width: 200px;
+    width: 180px;
     float: right;
     margin-right: 50px;
   }
   .change-photo {
     float: right;
-    margin-right: 50px;
+    margin-right: 20px;
   }
   .intro {
     height: 3vh;
